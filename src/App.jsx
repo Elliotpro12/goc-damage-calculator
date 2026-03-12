@@ -70,6 +70,7 @@ const T = {
     oliviaAccConfirm: "ENTENDIDO",
     partnerMina: "🛡 Mina",
     partnerMinaDesc: "Funcionalidad próximamente.",
+    oliviaFlatBonus: "Bonus plano de skill",
     oliviaPreRed: "Pre-reducción artefacto",
     oliviaArtRed: "Red. artefacto Olivia (−25%)",
     oliviaLabels: {
@@ -363,6 +364,7 @@ const T = {
     oliviaAccConfirm: "UNDERSTOOD",
     partnerMina: "🛡 Mina",
     partnerMinaDesc: "Functionality coming soon.",
+    oliviaFlatBonus: "Skill flat bonus",
     oliviaPreRed: "Pre-artifact reduction",
     oliviaArtRed: "Olivia artifact red. (−25%)",
     oliviaLabels: {
@@ -1141,6 +1143,7 @@ function OliviaAccuracyPopup({ t, onClose }) {
 
 // ── Olivia Damage Panel ───────────────────────────────────────────────────
 const initialOlivia = {
+  skill_flat_bonus: 0,
   ataque: 56400,
   penetracion: 0.884,
   escaladohabilidad: 5.01,
@@ -1168,9 +1171,9 @@ function calcOliviaDamage({ atk, def, isCrit, isDebuff }) {
   const debuff_mod   = isDebuff ? (atk.debuffDmg   - def.reduccionDebuff)       : 0;
 
   const multiplicador    = dmg_bonus + dano_magico + dano_critico;
-  const danofinal_nocrit = danobase * (dmg_bonus + dano_magico) * (1 - OLIVIA_ARTIFACT_REDUCTION);
+  const danofinal_nocrit = danobase * (dmg_bonus + dano_magico) * (1 - OLIVIA_ARTIFACT_REDUCTION) + (atk.skill_flat_bonus || 0);
   const danofinal_pre    = danobase * multiplicador;
-  const danofinal_base   = danofinal_pre * (1 - OLIVIA_ARTIFACT_REDUCTION);
+  const danofinal_base   = danofinal_pre * (1 - OLIVIA_ARTIFACT_REDUCTION) + (atk.skill_flat_bonus || 0);
   const danofinal_debuff = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
   const heavy_raw        = Math.abs(danofinal_base - danofinal_base * 1.30);
   const total_hd         = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
