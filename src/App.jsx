@@ -15,7 +15,7 @@ function useIsMobile() {
 const T = {
   es: {
     tagline: "// GUARDIANS OF CLOUDIA — SIMULACIÓN TÁCTICA",
-    title: "CALCULADORA DE DAÑO  v0.9",
+    title: "CALCULADORA DE DAÑO  v1.0",
     tabAtk: "⚔ ATACANTE", tabDef: "🛡 DEFENSOR", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 ATK CARGADO",
     conditions: "CONDICIONES DEL GOLPE",
     flagCrit: "💥 Crítico", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -27,6 +27,9 @@ const T = {
     partnerOlivia: "❄️ Olivia", partnerIsabel: "🌿 Isabel",
     partnerOliviaDesc: "Calculadora de daño de Olivia — stats propios, sin PvP ni clase.",
     partnerIsabelDesc: "Calculadora de curación — Skill 1.",
+    isabelPopupTitle: "🌿 ISABEL — SKILL 1: PUNTO DE BENDICIÓN DEL BOSQUE",
+    isabelPopupBody: "Esta calculadora solo contempla la curación de la Skill 1: <strong>Punto de Bendición del Bosque</strong>.<br/><br/>Las demás habilidades de Isabel no están incluidas aún.",
+    isabelPopupBtn: "ENTENDIDO",
     partnerActive: "Activo", partnerInactive: "Inactivo",
     partnerLabel: "Partner activo:",
     oliviaPopupTitle: "⚠ AVISO — CÁLCULO DE OLIVIA",
@@ -45,7 +48,8 @@ const T = {
     ],
     tenacityPopupConfirm: "ENTENDIDO",
     tenacityPopupBtn: "⚠ Precisión",
-    isabelTitle: "🌿 ISABEL — SKILL 1: CURACIÓN",
+    isabelTitle: "🌿 ISABEL — SKILL 1: PUNTO DE BENDICIÓN DEL BOSQUE",
+    isabelHpHint: "Introduce el HP de los 4 compañeros de tu equipo. Isabel es uno de ellos — es la única que se despliega en batalla, los otros 3 solo aportan stats.",
     isabelSumHp: "Suma total de HP (partners)",
     isabelBaseHeal: "Curación base",
     isabelPveTitle: "PvE — Curación por tick (×3)",
@@ -76,6 +80,26 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v1.0", date:"Marzo 2026", label:"Versión Completa",
+        changes:[
+          "Daño base sin crítico añadido al display de resultados (panel principal y Olivia)",
+          "Etiquetas de resultados actualizadas con crítico y debuff donde corresponde",
+          "Barra Heavy actualizada: Heavy + Crít. + Debuff",
+          "Popup informativo al abrir el panel de Isabel (Skill 1: Punto de Bendición del Bosque)",
+          "Botón ? en el header de Isabel con explicación del HP a introducir",
+          "Indicador visual cuando los modificadores netos reducen el daño (multiplicador en rojo)",
+          "Stats guardados en localStorage — persisten entre sesiones",
+          "Botón ↺ Reset por pestaña para restaurar valores por defecto",
+          "Versión subida a v1.0 — primera versión completa",
+        ]
+      },
+      {
+        version: "v0.9.1", date: "Marzo 2026", label: "Hotfix Defensor",
+        changes: [
+          "Red. Penetración eliminada del panel Defensor — depende de Tenacidad (mecánica aún sin descifrar)",
+          "El valor sigue activo internamente en la fórmula con el default hardcodeado",
+        ]
+      },
       {
         version: "v0.9", date: "Marzo 2026", label: "Pulido de Partners & UI",
         changes: [
@@ -193,7 +217,7 @@ const T = {
       { label: "Fórmulas y mecánicas", value: "xDarKz" },
       { label: "Desarrollo UI / React", value: "Claude (Anthropic)" },
       { label: "Juego", value: "Guardians of Cloudia" },
-      { label: "Versión", value: "v0.9 — Work in Progress" },
+      { label: "Versión", value: "v1.0" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Bonus plano de skill",
@@ -212,6 +236,8 @@ const T = {
     defTabPopupTitle: "🛡 PESTAÑA — DEFENSOR",
     defTabPopupBody: "Aquí van las <strong>stats defensivas de tu enemigo</strong>. Ingresa los valores del oponente: defensa, reducción de penetración, reducciones de daño, etc.",
     defTabPopupBtn: "ENTENDIDO",
+    resetBtn: "↺ Reset",
+    negModWarning: "⚠ Los modificadores netos están reduciendo tu daño",
     calcBtn: "CALCULAR DAÑO",
     mobileShowResults: "VER RESULTADOS ▼",
     mobileShowInputs: "◀ VOLVER",
@@ -227,9 +253,10 @@ const T = {
     modCrit: "Crítico neto", modDebuff: "Debuff neto", modPvP: "PvP neto", modClass: "vs Clase enemiga",
     modChargedDmg: "Bono daño (cargado)", modChargedRed: "Red. daño (cargado)",
     multTotal: "Multiplicador Total",
-    danoSinDebuff: "Daño base + crítico (sin debuff)", danoConDebuff: "Daño con debuff",
-    heavyDebuff: "Heavy (×1.30 + debuff)", heavyNormal: "Heavy hit (×1.30)",
-    barNormal: "Base + Crít.", barDebuff: "+ Debuff", barHeavy: "Heavy",
+    danoNoCrit: "Daño base (sin crítico)",
+    danoSinDebuff: "Daño base + crítico (sin debuff)", danoConDebuff: "Daño + crítico + debuff",
+    heavyDebuff: "Heavy ×1.30 + crítico + debuff", heavyNormal: "Heavy hit ×1.30 + crítico",
+    barNormal: "Base + Crít.", barDebuff: "Crít. + Debuff", barHeavy: "Heavy + Crít. + Debuff",
     probAcierto: "Probabilidad total de acierto", dmgRecibido: "Efecto 'DMG recibido aumentado' dejado por Heavy ATK (debuff)",
     heavyInfoBtn: "❓ ¿Cómo funciona Heavy ATK?",
     heavyInfoTitle: "MECÁNICA — HEAVY ATK",
@@ -281,7 +308,7 @@ const T = {
   },
   en: {
     tagline: "// GUARDIANS OF CLOUDIA — TACTICAL SIMULATION",
-    title: "DAMAGE CALCULATOR  v0.9",
+    title: "DAMAGE CALCULATOR  v1.0",
     tabAtk: "⚔ ATTACKER", tabDef: "🛡 DEFENDER", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 CHARGED ATK",
     conditions: "HIT CONDITIONS",
     flagCrit: "💥 Critical", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -293,6 +320,9 @@ const T = {
     partnerOlivia: "❄️ Olivia", partnerIsabel: "🌿 Isabel",
     partnerOliviaDesc: "Olivia damage calculator — own stats, no PvP or class mods.",
     partnerIsabelDesc: "Healing calculator — Skill 1.",
+    isabelPopupTitle: "🌿 ISABEL — SKILL 1: FOREST BLESSING",
+    isabelPopupBody: "This calculator only covers the healing from Skill 1: <strong>Forest Blessing</strong>.<br/><br/>Isabel's other skills are not included yet.",
+    isabelPopupBtn: "GOT IT",
     partnerActive: "Active", partnerInactive: "Inactive",
     partnerLabel: "Active partner:",
     oliviaPopupTitle: "⚠ WARNING — OLIVIA CALCULATION",
@@ -311,7 +341,8 @@ const T = {
     ],
     tenacityPopupConfirm: "UNDERSTOOD",
     tenacityPopupBtn: "⚠ Accuracy",
-    isabelTitle: "🌿 ISABEL — SKILL 1: HEALING",
+    isabelTitle: "🌿 ISABEL — SKILL 1: FOREST BLESSING",
+    isabelHpHint: "Enter the HP of your 4 team partners. Isabel is one of them — she's the only one deployed in battle, the other 3 only contribute stats.",
     isabelSumHp: "Total HP sum (partners)",
     isabelBaseHeal: "Base healing",
     isabelPveTitle: "PvE — Healing per tick (×3)",
@@ -342,6 +373,26 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v1.0", date:"March 2026", label:"Full Release",
+        changes:[
+          "Base damage without crit added to results display (main panel and Olivia)",
+          "Result labels updated with crit and debuff where applicable",
+          "Heavy bar updated: Heavy + Crit. + Debuff",
+          "Info popup when opening Isabel panel (Skill 1: Forest Blessing)",
+          "? button in Isabel header explaining which HP values to enter",
+          "Visual indicator when net modifiers reduce damage (multiplier turns red)",
+          "Stats saved to localStorage — persist between sessions",
+          "↺ Reset button per tab to restore default values",
+          "Version bumped to v1.0 — first complete release",
+        ]
+      },
+      {
+        version: "v0.9.1", date: "March 2026", label: "Defender Hotfix",
+        changes: [
+          "Pen. Reduction removed from Defender panel — depends on Tenacity (mechanic not yet figured out)",
+          "Value remains active internally in the formula with the hardcoded default",
+        ]
+      },
       {
         version: "v0.9", date: "March 2026", label: "Partners Polish & UI",
         changes: [
@@ -459,7 +510,7 @@ const T = {
       { label: "Formulas & mechanics", value: "xDarKz" },
       { label: "UI / React development", value: "Claude (Anthropic)" },
       { label: "Game", value: "Guardians of Cloudia" },
-      { label: "Version", value: "v0.9 — Work in Progress" },
+      { label: "Version", value: "v1.0" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Skill flat bonus",
@@ -478,6 +529,8 @@ const T = {
     defTabPopupTitle: "🛡 TAB — DEFENDER",
     defTabPopupBody: "This is where your <strong>enemy's defensive stats</strong> go. Enter the opponent's values: defense, penetration reduction, damage reductions, etc.",
     defTabPopupBtn: "GOT IT",
+    resetBtn: "↺ Reset",
+    negModWarning: "⚠ Net modifiers are reducing your damage",
     calcBtn: "CALCULATE DAMAGE",
     mobileShowResults: "SEE RESULTS ▼",
     mobileShowInputs: "◀ BACK",
@@ -493,9 +546,10 @@ const T = {
     modCrit: "Net critical", modDebuff: "Net debuff", modPvP: "Net PvP", modClass: "vs Enemy class",
     modChargedDmg: "DMG bonus (charged)", modChargedRed: "DMG red. (charged)",
     multTotal: "Total Multiplier",
-    danoSinDebuff: "Base + crit damage (no debuff)", danoConDebuff: "Damage with debuff",
-    heavyDebuff: "Heavy (×1.30 + debuff)", heavyNormal: "Heavy hit (×1.30)",
-    barNormal: "Base + Crit.", barDebuff: "+ Debuff", barHeavy: "Heavy",
+    danoNoCrit: "Base damage (no crit)",
+    danoSinDebuff: "Base + crit damage (no debuff)", danoConDebuff: "Dmg + crit + debuff",
+    heavyDebuff: "Heavy ×1.30 + crit + debuff", heavyNormal: "Heavy hit ×1.30 + crit",
+    barNormal: "Base + Crit.", barDebuff: "Crit. + Debuff", barHeavy: "Heavy + Crit. + Debuff",
     probAcierto: "Total hit probability", dmgRecibido: "'Damage received increase' effect left by Heavy ATK (debuff)",
     heavyInfoBtn: "❓ How does Heavy ATK work?",
     heavyInfoTitle: "MECHANICS — HEAVY ATK",
@@ -567,7 +621,7 @@ const initialCharged = {
 const PCT_FIELDS = new Set([
   "penetracion","escaladohabilidad","bonoDano","bonoDanoFisico","bonoDanoMagico",
   "danoCritico","debuffDmg","pvpDmgBonus","allClassesDmgBonus","dmgToEnemyClass",
-  "reduccionPenetracion","reduccionDano","reduccionDanoFisico","reduccionDanoMagico",
+  "reduccionDano","reduccionDanoFisico","reduccionDanoMagico",
   "reduccionDanoCritico","reduccionDebuff","reduccionTrueDmg","pvpDmgReduccion",
   "reduccionAllClassesDmg","reduccionDmgFromClass",
   "ataque_fuerte_porcentaje","hit_rate","evacion",
@@ -613,6 +667,7 @@ function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive,
     ? dmg_bonus + dano_tipo
     : dmg_bonus + dano_tipo + dano_critico + pvp_mod + class_mod;
 
+  const danofinal_nocrit = danobase * (dmg_bonus + dano_tipo);
   const danofinal_base   = danobase * multiplicador;
   const danofinal_debuff = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
   const heavy_raw        = Math.abs(danofinal_base - danofinal_base * 1.30);
@@ -626,7 +681,7 @@ function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive,
   return {
     defensafinal, ataquefinal, danobase,
     dmg_bonus, dano_tipo, dano_critico, debuff_mod, pvp_mod, class_mod,
-    multiplicador, danofinal_base, danofinal_debuff, heavy_calc,
+    multiplicador, danofinal_nocrit, danofinal_base, danofinal_debuff, heavy_calc,
     prob_acierto, dmg_recibido,
     ca, effectiveBonoDano, effectiveReduccion,
   };
@@ -879,7 +934,7 @@ function ChargedAtkPanel({ t, chargedAtkVal, setChargedAtkVal, chargedAtkActive,
 // ── Changelog Popup ───────────────────────────────────────────────────────
 function ChangelogPopup({ t, onClose }) {
   const versionColors = {
-    "v0.9":"#fcd34d", "v0.8":"#fb923c", "v0.6":"#a78bfa", "v0.5":"#f87171",
+    "v0.9.1":"#86efac", "v0.9":"#fcd34d", "v0.8":"#fb923c", "v0.6":"#a78bfa", "v0.5":"#f87171",
     "v0.4":"#60a5fa", "v0.3":"#34d399", "v0.2":"#fb923c", "v0.1":"#94a3b8",
   };
   return (
@@ -975,7 +1030,7 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
         <div style={{...P.noteBox, background:"rgba(202,138,4,0.08)", border:"1px solid #4a3800"}}>
           <span style={P.noteIcon}>🔍</span>
           <span style={{...P.noteText, color:"#fbbf24"}}>
-            Guardians of Cloudia — Damage Calculator v0.9
+            Guardians of Cloudia — Damage Calculator v1.0
           </span>
         </div>
         <div style={{...P.btnRow, justifyContent:"center"}}>
@@ -1109,6 +1164,7 @@ function calcOliviaDamage({ atk, def, isCrit, isDebuff }) {
   const debuff_mod   = isDebuff ? (atk.debuffDmg   - def.reduccionDebuff)       : 0;
 
   const multiplicador    = dmg_bonus + dano_magico + dano_critico;
+  const danofinal_nocrit = danobase * (dmg_bonus + dano_magico) * (1 - OLIVIA_ARTIFACT_REDUCTION);
   const danofinal_pre    = danobase * multiplicador;
   const danofinal_base   = danofinal_pre * (1 - OLIVIA_ARTIFACT_REDUCTION);
   const danofinal_debuff = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
@@ -1116,7 +1172,7 @@ function calcOliviaDamage({ atk, def, isCrit, isDebuff }) {
   const total_hd         = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
   const heavy_calc       = heavy_raw + total_hd;
 
-  return { defensafinal, ataquefinal, danobase, dmg_bonus, dano_magico, dano_critico, debuff_mod, multiplicador, danofinal_pre, danofinal_base, danofinal_debuff, heavy_calc, OLIVIA_ARTIFACT_REDUCTION };
+  return { defensafinal, ataquefinal, danobase, dmg_bonus, dano_magico, dano_critico, debuff_mod, multiplicador, danofinal_nocrit, danofinal_pre, danofinal_base, danofinal_debuff, heavy_calc, OLIVIA_ARTIFACT_REDUCTION };
 }
 
 function OliviaPanel({ t, def, stats, setStats }) {
@@ -1201,6 +1257,12 @@ function OliviaPanel({ t, def, stats, setStats }) {
           </div>
 
           <div style={{...S.isabelResultDivider, marginTop:10}}>{t.secFinal}</div>
+          {isCrit && (
+            <div style={S.isabelResultRow}>
+              <span style={S.isabelResultLbl}>{t.danoNoCrit}</span>
+              <span style={{...S.isabelResultVal,color:"#6a7a60"}}>{Math.round(res.danofinal_nocrit).toLocaleString("es-ES")}</span>
+            </div>
+          )}
           <div style={S.isabelResultRow}>
             <span style={S.isabelResultLbl}>{t.oliviaPreRed}</span>
             <span style={{...S.isabelResultVal,color:"#94a3b8"}}>{Math.round(res.danofinal_pre).toLocaleString("es-ES")}</span>
@@ -1266,13 +1328,30 @@ function calcIsabelHeal(s) {
 }
 
 function IsabelPanel({ t }) {
+  const [showHpHint, setShowHpHint] = useState(false);
+  const hpHintTimer = useRef(null);
   const [stats, setStats] = useState(initialIsabel);
   const res = calcIsabelHeal(stats);
   const us  = (f, v) => setStats(p => ({...p, [f]: v}));
 
   return (
     <div style={{ padding:"14px 18px" }}>
-      <div style={S.isabelHeader}>{t.isabelTitle}</div>
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14,position:"relative"}}>
+        <div style={S.isabelHeader}>{t.isabelTitle}</div>
+        <div style={{position:"relative",flexShrink:0}}>
+          <button
+            onClick={()=>setShowHpHint(p=>{ if(!p){ clearTimeout(hpHintTimer.current); hpHintTimer.current=setTimeout(()=>setShowHpHint(false),5000); } return !p; })}
+            style={{width:22,height:22,borderRadius:"50%",background:"rgba(167,139,250,0.15)",border:"1px solid #7c3aed",color:"#a78bfa",cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:700,lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
+            ?
+          </button>
+          {showHpHint && (
+            <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,zIndex:9999,background:"#0f0d09",border:"1px solid #3a1a5a",borderRadius:3,padding:"10px 14px",minWidth:240,maxWidth:280,boxShadow:"0 8px 24px rgba(0,0,0,0.8)",fontSize:12,color:"#b0a080",lineHeight:1.7,fontFamily:"'Courier New',monospace"}}>
+              <div style={{fontSize:10,color:"#a78bfa",letterSpacing:"0.15em",marginBottom:6,borderLeft:"2px solid #7c3aed",paddingLeft:6}}>HP DE PARTNERS</div>
+              {t.isabelHpHint}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Inputs */}
       {Object.keys(initialIsabel).map(f => {
@@ -1344,7 +1423,7 @@ function IsabelPanel({ t }) {
 }
 
 // ── Partners Panel ────────────────────────────────────────────────────────
-function PartnersPanel({ t, flags, tg, isabelOpen, setIsabelOpen, oliviaOpen, setOliviaOpen, onOliviaClick }) {
+function PartnersPanel({ t, flags, tg, isabelOpen, setIsabelOpen, oliviaOpen, setOliviaOpen, onOliviaClick, onIsabelClick }) {
   const mob = useContext(MobileCtx);
 
   const partners = [
@@ -1396,7 +1475,7 @@ function PartnersPanel({ t, flags, tg, isabelOpen, setIsabelOpen, oliviaOpen, se
             }}
               onClick={() => {
                 if (p.isOlivia) { onOliviaClick(); }
-                if (p.isIsabel) { setIsabelOpen(o => !o); if (!isabelOpen) setOliviaOpen(false); }
+                if (p.isIsabel) { onIsabelClick(); }
               }}
             >
               <div style={S.partnerCardTop}>
@@ -1479,8 +1558,12 @@ function HeavyAtkPanel({ t, ch, uc }) {
 export default function App() {
   const isMobile = useIsMobile();
   const [lang, setLang]   = useState("es");
-  const [atk,  setAtk]   = useState(initialAttacker);
-  const [def,  setDef]   = useState(initialDefender);
+  const [atk,  setAtk]   = useState(() => {
+    try { const s = localStorage.getItem("goc_atk"); return s ? {...initialAttacker,...JSON.parse(s)} : initialAttacker; } catch { return initialAttacker; }
+  });
+  const [def,  setDef]   = useState(() => {
+    try { const s = localStorage.getItem("goc_def"); return s ? {...initialDefender,...JSON.parse(s)} : initialDefender; } catch { return initialDefender; }
+  });
   const [ch,   setCh]    = useState(initialCharged);
   const [chargedAtkVal,    setChargedAtkVal]    = useState(0);
   const [chargedAtkActive, setChargedAtkActive] = useState(false);
@@ -1497,10 +1580,19 @@ export default function App() {
   const [oliviaOpen,      setOliviaOpen]      = useState(false);
   const [oliviaAccSeen,   setOliviaAccSeen]   = useState(false);
   const [showOliviaAcc,   setShowOliviaAcc]   = useState(false);
+  const [isabelPopupSeen, setIsabelPopupSeen] = useState(false);
+  const [showIsabelPopup, setShowIsabelPopup] = useState(false);
   const [atkPopupSeen,    setAtkPopupSeen]    = useState(false);
   const [showAtkPopup,    setShowAtkPopup]    = useState(false);
   const [defPopupSeen,    setDefPopupSeen]    = useState(false);
   const [showDefPopup,    setShowDefPopup]    = useState(false);
+
+  const handleIsabelClick = () => {
+    if (isabelOpen) { setIsabelOpen(false); return; }
+    setOliviaOpen(false);
+    if (!isabelPopupSeen) { setShowIsabelPopup(true); }
+    else { setIsabelOpen(true); }
+  };
 
   const handleOliviaClick = () => {
     if (oliviaOpen) { setOliviaOpen(false); return; }
@@ -1508,7 +1600,9 @@ export default function App() {
     if (!oliviaAccSeen) { setShowOliviaAcc(true); }
     else { setOliviaOpen(true); }
   };
-  const [oliviaStats,  setOliviaStats]  = useState(initialOlivia);
+  const [oliviaStats,  setOliviaStats]  = useState(() => {
+    try { const s = localStorage.getItem("goc_olivia"); return s ? {...initialOlivia,...JSON.parse(s)} : initialOlivia; } catch { return initialOlivia; }
+  });
   const [flags, setFlags] = useState({ isCrit:true, isDebuff:true, isPvP:true, isMagic:true, isPartner:false, isIsabel:false, isMina:false, isClass:true });
   const [res,   setRes]   = useState(null);
   const [tab,   setTab]   = useState("atk");
@@ -1517,6 +1611,10 @@ export default function App() {
 
   const ua = useCallback((f,v)=>setAtk(p=>({...p,[f]:v})),[]);
   const ud = useCallback((f,v)=>setDef(p=>({...p,[f]:v})),[]);
+
+  useEffect(() => { try { localStorage.setItem("goc_atk", JSON.stringify(atk)); } catch {} }, [atk]);
+  useEffect(() => { try { localStorage.setItem("goc_def", JSON.stringify(def)); } catch {} }, [def]);
+  useEffect(() => { try { localStorage.setItem("goc_olivia", JSON.stringify(oliviaStats)); } catch {} }, [oliviaStats]);
   const uc = useCallback((f,v)=>setCh(p=>({...p,[f]:v})),[]);
   const tgRaw = useCallback(f=>setFlags(p=>({...p,[f]:!p[f]})),[]);
   const tg = useCallback(f => {
@@ -1614,6 +1712,15 @@ export default function App() {
         <InfoTabPopup title={t.defTabPopupTitle} body={t.defTabPopupBody} btnLabel={t.defTabPopupBtn} accentColor="#3b82f6" onClose={() => setShowDefPopup(false)} />
       )}
       {/* OLIVIA ACCURACY POPUP */}
+      {showIsabelPopup && (
+        <InfoTabPopup
+          title={t.isabelPopupTitle}
+          body={t.isabelPopupBody}
+          btnLabel={t.isabelPopupBtn}
+          accentColor="#a78bfa"
+          onClose={() => { setShowIsabelPopup(false); setIsabelPopupSeen(true); setIsabelOpen(true); }}
+        />
+      )}
       {showOliviaAcc && (
         <OliviaAccuracyPopup t={t} onClose={() => { setShowOliviaAcc(false); setOliviaAccSeen(true); setOliviaOpen(true); }} />
       )}
@@ -1721,9 +1828,9 @@ export default function App() {
 
             <div ref={scrollRef} style={{...M("scroll"), ...(tab==="pt" ? {maxHeight:"none", overflowY:"visible"} : {})}}>
               {tab==="atk" && Object.keys(initialAttacker).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={atk[f]} onChange={ua} isPercent={PCT_FIELDS.has(f)}/>)}
-              {tab==="def" && Object.keys(initialDefender).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={def[f]} onChange={ud} isPercent={PCT_FIELDS.has(f)}/>)}
+              {tab==="def" && Object.keys(initialDefender).filter(f => f !== "reduccionPenetracion").map(f=><StatInput key={f} label={t.labels[f]} field={f} value={def[f]} onChange={ud} isPercent={PCT_FIELDS.has(f)}/>)}
               {tab==="ch"  && <HeavyAtkPanel t={t} ch={ch} uc={uc} />}
-              {tab==="pt"  && <PartnersPanel t={t} flags={flags} tg={tg} isabelOpen={isabelOpen} setIsabelOpen={setIsabelOpen} oliviaOpen={oliviaOpen} setOliviaOpen={setOliviaOpen} onOliviaClick={handleOliviaClick} />}
+              {tab==="pt"  && <PartnersPanel t={t} flags={flags} tg={tg} isabelOpen={isabelOpen} setIsabelOpen={setIsabelOpen} oliviaOpen={oliviaOpen} setOliviaOpen={setOliviaOpen} onOliviaClick={handleOliviaClick} onIsabelClick={handleIsabelClick} />}
               {tab==="ca"  && (
                 <ChargedAtkPanel t={t}
                   chargedAtkVal={chargedAtkVal} setChargedAtkVal={setChargedAtkVal}
@@ -1752,7 +1859,16 @@ export default function App() {
                   {flags.isPartner&&<span style={{color:"#60a5fa",marginLeft:10}}>{t.modoOlivia}</span>}
                 </div>
               </div>
-              <button style={M("btn")} onClick={() => { go(); if(isMobile) setMobileView("results"); }}>{t.calcBtn}</button>
+              <div style={{display:"flex",gap:8,margin:"14px 18px 18px"}}>
+              <button style={{...M("btn"),margin:0,flex:1}} onClick={() => { go(); if(isMobile) setMobileView("results"); }}>{t.calcBtn}</button>
+              <button style={{padding:"15px 14px",background:"rgba(200,160,40,0.08)",border:"1px solid #3a2510",borderRadius:2,color:"#a08040",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700,letterSpacing:"0.08em",flexShrink:0}}
+                onClick={() => {
+                  if(tab==="atk") { setAtk(initialAttacker); localStorage.removeItem("goc_atk"); }
+                  if(tab==="def") { setDef(initialDefender); localStorage.removeItem("goc_def"); }
+                }}>
+                {t.resetBtn}
+              </button>
+            </div>
               {isMobile && mobileView==="inputs" && (
                 <button style={{...S.btn, margin:"0 14px 14px", padding:"11px", fontSize:12, background:"#1a1a1a", border:"1px solid #3a2510"}}
                   onClick={() => setMobileView("results")}>
@@ -1851,14 +1967,20 @@ export default function App() {
                 </>
               )}
 
-              <div style={S.multRow}>
+              <div style={{...S.multRow, ...(res.multiplicador < 0 ? {borderTop:"1px solid #7f1d1d"} : {})}}>
                 <span style={{color:"#a08855",fontSize:14}}>{t.multTotal}</span>
-                <span style={{color:"#fcd34d",fontFamily:"monospace",fontSize:17,fontWeight:700}}>
+                <span style={{color: res.multiplicador < 0 ? "#f87171" : "#fcd34d", fontFamily:"monospace",fontSize:17,fontWeight:700}}>
                   ×{res.multiplicador.toFixed(5)}
                 </span>
               </div>
+              {res.multiplicador < 0 && (
+                <div style={{padding:"8px 12px",marginTop:6,background:"rgba(127,29,29,0.3)",border:"1px solid #7f1d1d",borderRadius:2,fontSize:12,color:"#fca5a5",letterSpacing:"0.05em"}}>
+                  {t.negModWarning}
+                </div>
+              )}
 
               <SecTitle>{t.secFinal}</SecTitle>
+              {flags.isCrit && <RRow label={t.danoNoCrit} value={res.danofinal_nocrit} color="#6a7a60"/>}
               <RRow label={t.danoSinDebuff} value={res.danofinal_base}   color="#94a3b8"/>
               {flags.isDebuff&&<RRow label={t.danoConDebuff} value={res.danofinal_debuff} color="#fb923c" bold size={17}/>}
               <RRow label={flags.isDebuff?t.heavyDebuff:t.heavyNormal} value={res.heavy_calc} color="#f87171" bold size={22}/>
