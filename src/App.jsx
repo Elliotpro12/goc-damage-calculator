@@ -15,7 +15,7 @@ function useIsMobile() {
 const T = {
   es: {
     tagline: "// GUARDIANS OF CLOUDIA — SIMULACIÓN TÁCTICA",
-    title: "CALCULADORA DE DAÑO  v0.8",
+    title: "CALCULADORA DE DAÑO  v0.9",
     tabAtk: "⚔ ATACANTE", tabDef: "🛡 DEFENSOR", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 ATK CARGADO",
     conditions: "CONDICIONES DEL GOLPE",
     flagCrit: "💥 Crítico", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -77,7 +77,31 @@ const T = {
     changelogTitle: "CHANGELOG",
     changelog: [
       {
-        version: "v0.8", date: "2025", label: "Deploy & Responsive",
+        version: "v0.9", date: "Marzo 2026", label: "Pulido de Partners & UI",
+        changes: [
+          "Pestaña Partners: scroll eliminado — las 3 tarjetas siempre visibles sin cortes",
+          "Paneles de Olivia e Isabel siempre abren a la derecha en PC",
+          "En móvil los paneles de partner ocupan pantalla completa con botón ◀ Volver",
+          "Flechas de partners: ▼/▲ en móvil, ▶/◀ en PC según dirección real",
+          "Condiciones del golpe y botón Calcular ocultos en pestaña Partners",
+          "Dropdown de Créditos se cierra automáticamente tras 5 segundos",
+          "Popup informativo al entrar a la pestaña Atacante (stats ofensivos)",
+          "Popup informativo al entrar a la pestaña Defensor (stats del enemigo)",
+          "Fechas actualizadas a 2026 en todo el changelog",
+        ]
+      },
+      {
+        version: "v0.8", date: "2026", label: "Changelog & Header",
+        changes: [
+          "Changelog integrado en la app — botón 📋 en el header",
+          "Historial completo documentado desde v0.1 hasta v0.8",
+          "Botones del header reorganizados: idioma arriba, acciones abajo",
+          "Créditos y Changelog alineados junto a botón de Precisión",
+          "Nombre del autor actualizado a xDarKz en créditos",
+        ]
+      },
+      {
+        version: "v0.7", date: "2026", label: "Deploy & Responsive",
         changes: [
           "Diseño adaptado para móvil y PC (responsive completo)",
           "En móvil: vista de inputs y resultados separadas con navegación",
@@ -88,7 +112,7 @@ const T = {
         ]
       },
       {
-        version: "v0.6", date: "2025", label: "Partners — Olivia & Isabel",
+        version: "v0.6", date: "2026", label: "Partners — Olivia & Isabel",
         changes: [
           "Nueva pestaña 👥 Partners separada de las condiciones",
           "❄️ Olivia — panel de daño propio con stats independientes",
@@ -103,7 +127,7 @@ const T = {
         ]
       },
       {
-        version: "v0.5", date: "2025", label: "Heavy ATK & Popups",
+        version: "v0.5", date: "2026", label: "Heavy ATK & Popups",
         changes: [
           "'Ataque Fuerte' renombrado a 'Heavy ATK' en toda la app",
           "Pestaña ⚡ Heavy ATK con panel propio: stats, resultados en vivo",
@@ -115,7 +139,7 @@ const T = {
         ]
       },
       {
-        version: "v0.4", date: "2025", label: "Ataque Cargado & Partners",
+        version: "v0.4", date: "2026", label: "Ataque Cargado & Partners",
         changes: [
           "Nueva pestaña 🔋 ATK Cargado con valor editable y barra visual",
           "Selector de stacks ×1 / ×2 / ×3 (afectan True DMG y True DMG Red.)",
@@ -128,7 +152,7 @@ const T = {
         ]
       },
       {
-        version: "v0.3", date: "2025", label: "Idiomas & Alineación",
+        version: "v0.3", date: "2026", label: "Idiomas & Alineación",
         changes: [
           "Toggle de idioma 🇪🇸 ES / 🇺🇸 EN en el header",
           "Traducción completa de todos los textos al inglés",
@@ -140,7 +164,7 @@ const T = {
         ]
       },
       {
-        version: "v0.2", date: "2025", label: "Clases & Mejoras UI",
+        version: "v0.2", date: "2026", label: "Clases & Mejoras UI",
         changes: [
           "Soporte para clase Física y Mágica en el multiplicador de daño",
           "Stats separados: bonoDanoFisico / bonoDanoMagico y sus reducciones",
@@ -152,7 +176,7 @@ const T = {
         ]
       },
       {
-        version: "v0.1", date: "2025", label: "Versión Inicial",
+        version: "v0.1", date: "2026", label: "Versión Inicial",
         changes: [
           "Traducción de la fórmula de daño C++ a React",
           "Pestañas de Atacante, Defensor y Heavy ATK con stats editables",
@@ -169,7 +193,7 @@ const T = {
       { label: "Fórmulas y mecánicas", value: "xDarKz" },
       { label: "Desarrollo UI / React", value: "Claude (Anthropic)" },
       { label: "Juego", value: "Guardians of Cloudia" },
-      { label: "Versión", value: "v0.8 — Work in Progress" },
+      { label: "Versión", value: "v0.9 — Work in Progress" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Bonus plano de skill",
@@ -182,6 +206,12 @@ const T = {
       partners_healing_reduction: "Red. curación artefacto (fija, solo PvP)",
       healing_bonus: "Bono de curación",
     },
+    atkTabPopupTitle: "⚔ PESTAÑA — ATACANTE",
+    atkTabPopupBody: "Aquí van <strong>tus stats ofensivos</strong>. Ingresa los valores de tu personaje: ataque, penetración, escalado de habilidad, bonos de daño, crítico, etc.",
+    atkTabPopupBtn: "ENTENDIDO",
+    defTabPopupTitle: "🛡 PESTAÑA — DEFENSOR",
+    defTabPopupBody: "Aquí van las <strong>stats defensivas de tu enemigo</strong>. Ingresa los valores del oponente: defensa, reducción de penetración, reducciones de daño, etc.",
+    defTabPopupBtn: "ENTENDIDO",
     calcBtn: "CALCULAR DAÑO",
     mobileShowResults: "VER RESULTADOS ▼",
     mobileShowInputs: "◀ VOLVER",
@@ -251,7 +281,7 @@ const T = {
   },
   en: {
     tagline: "// GUARDIANS OF CLOUDIA — TACTICAL SIMULATION",
-    title: "DAMAGE CALCULATOR  v0.8",
+    title: "DAMAGE CALCULATOR  v0.9",
     tabAtk: "⚔ ATTACKER", tabDef: "🛡 DEFENDER", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 CHARGED ATK",
     conditions: "HIT CONDITIONS",
     flagCrit: "💥 Critical", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -313,7 +343,31 @@ const T = {
     changelogTitle: "CHANGELOG",
     changelog: [
       {
-        version: "v0.8", date: "2025", label: "Deploy & Responsive",
+        version: "v0.9", date: "March 2026", label: "Partners Polish & UI",
+        changes: [
+          "Partners tab: scroll removed — all 3 cards always visible without clipping",
+          "Olivia and Isabel panels always open to the right on PC",
+          "On mobile, partner panels take full screen with ◀ Back button",
+          "Partner arrows: ▼/▲ on mobile, ▶/◀ on PC matching actual open direction",
+          "Hit conditions and Calc button hidden while on Partners tab",
+          "Credits dropdown auto-closes after 5 seconds",
+          "Info popup when entering the Attacker tab (offensive stats)",
+          "Info popup when entering the Defender tab (enemy defensive stats)",
+          "Dates updated to 2026 across all changelog entries",
+        ]
+      },
+      {
+        version: "v0.8", date: "2026", label: "Changelog & Header",
+        changes: [
+          "Changelog integrated into the app — 📋 button in header",
+          "Full history documented from v0.1 to v0.8",
+          "Header buttons reorganized: language on top, actions below",
+          "Credits and Changelog aligned next to Accuracy button",
+          "Author name updated to xDarKz in credits",
+        ]
+      },
+      {
+        version: "v0.7", date: "2026", label: "Deploy & Responsive",
         changes: [
           "Full responsive design for mobile and PC",
           "Mobile: separate input/results views with navigation",
@@ -324,7 +378,7 @@ const T = {
         ]
       },
       {
-        version: "v0.6", date: "2025", label: "Partners — Olivia & Isabel",
+        version: "v0.6", date: "2026", label: "Partners — Olivia & Isabel",
         changes: [
           "New 👥 Partners tab separated from hit conditions",
           "❄️ Olivia — own damage panel with independent stats",
@@ -339,7 +393,7 @@ const T = {
         ]
       },
       {
-        version: "v0.5", date: "2025", label: "Heavy ATK & Popups",
+        version: "v0.5", date: "2026", label: "Heavy ATK & Popups",
         changes: [
           "'Ataque Fuerte' renamed to 'Heavy ATK' throughout the app",
           "⚡ Heavy ATK tab with own panel: stats and live results",
@@ -351,7 +405,7 @@ const T = {
         ]
       },
       {
-        version: "v0.4", date: "2025", label: "Charged Attack & Partners",
+        version: "v0.4", date: "2026", label: "Charged Attack & Partners",
         changes: [
           "New 🔋 Charged ATK tab with editable value and visual bar",
           "Stack selector ×1 / ×2 / ×3 (affect True DMG and True DMG Red.)",
@@ -364,7 +418,7 @@ const T = {
         ]
       },
       {
-        version: "v0.3", date: "2025", label: "Languages & Alignment",
+        version: "v0.3", date: "2026", label: "Languages & Alignment",
         changes: [
           "Language toggle 🇪🇸 ES / 🇺🇸 EN in header",
           "Full English translation of all texts",
@@ -376,7 +430,7 @@ const T = {
         ]
       },
       {
-        version: "v0.2", date: "2025", label: "Classes & UI Improvements",
+        version: "v0.2", date: "2026", label: "Classes & UI Improvements",
         changes: [
           "Support for Physical and Magic class in damage multiplier",
           "Separate stats: bonoDanoFisico / bonoDanoMagico and reductions",
@@ -388,7 +442,7 @@ const T = {
         ]
       },
       {
-        version: "v0.1", date: "2025", label: "Initial Version",
+        version: "v0.1", date: "2026", label: "Initial Version",
         changes: [
           "C++ damage formula translated to React",
           "Attacker, Defender and Heavy ATK tabs with editable stats",
@@ -405,7 +459,7 @@ const T = {
       { label: "Formulas & mechanics", value: "xDarKz" },
       { label: "UI / React development", value: "Claude (Anthropic)" },
       { label: "Game", value: "Guardians of Cloudia" },
-      { label: "Version", value: "v0.8 — Work in Progress" },
+      { label: "Version", value: "v0.9 — Work in Progress" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Skill flat bonus",
@@ -418,6 +472,12 @@ const T = {
       partners_healing_reduction: "Artifact healing reduction (fixed, PvP only)",
       healing_bonus: "Healing bonus",
     },
+    atkTabPopupTitle: "⚔ TAB — ATTACKER",
+    atkTabPopupBody: "This is where your <strong>offensive stats</strong> go. Enter your character's values: attack, penetration, skill scaling, damage bonuses, critical, etc.",
+    atkTabPopupBtn: "GOT IT",
+    defTabPopupTitle: "🛡 TAB — DEFENDER",
+    defTabPopupBody: "This is where your <strong>enemy's defensive stats</strong> go. Enter the opponent's values: defense, penetration reduction, damage reductions, etc.",
+    defTabPopupBtn: "GOT IT",
     calcBtn: "CALCULATE DAMAGE",
     mobileShowResults: "SEE RESULTS ▼",
     mobileShowInputs: "◀ BACK",
@@ -819,7 +879,7 @@ function ChargedAtkPanel({ t, chargedAtkVal, setChargedAtkVal, chargedAtkActive,
 // ── Changelog Popup ───────────────────────────────────────────────────────
 function ChangelogPopup({ t, onClose }) {
   const versionColors = {
-    "v0.8":"#fcd34d", "v0.6":"#a78bfa", "v0.5":"#f87171",
+    "v0.9":"#fcd34d", "v0.8":"#fb923c", "v0.6":"#a78bfa", "v0.5":"#f87171",
     "v0.4":"#60a5fa", "v0.3":"#34d399", "v0.2":"#fb923c", "v0.1":"#94a3b8",
   };
   return (
@@ -915,7 +975,7 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
         <div style={{...P.noteBox, background:"rgba(202,138,4,0.08)", border:"1px solid #4a3800"}}>
           <span style={P.noteIcon}>🔍</span>
           <span style={{...P.noteText, color:"#fbbf24"}}>
-            Guardians of Cloudia — Damage Calculator v0.8
+            Guardians of Cloudia — Damage Calculator v0.9
           </span>
         </div>
         <div style={{...P.btnRow, justifyContent:"center"}}>
@@ -964,6 +1024,31 @@ function OliviaWarningPopup({ t, onConfirm, onCancel }) {
   );
 }
 
+
+// ── Info Tab Popup ────────────────────────────────────────────────────────
+function InfoTabPopup({ title, body, btnLabel, accentColor, onClose }) {
+  return (
+    <div style={{...P.overlay, background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+      <div style={{...P.modal, maxWidth:420, padding:"26px 28px"}} onClick={e=>e.stopPropagation()}>
+        <div style={{...P.corner, top:0, left:0, borderTop:`2px solid ${accentColor}`, borderLeft:`2px solid ${accentColor}`}}/>
+        <div style={{...P.corner, top:0, right:0, borderTop:`2px solid ${accentColor}`, borderRight:`2px solid ${accentColor}`}}/>
+        <div style={{...P.corner, bottom:0, left:0, borderBottom:`2px solid ${accentColor}`, borderLeft:`2px solid ${accentColor}`}}/>
+        <div style={{...P.corner, bottom:0, right:0, borderBottom:`2px solid ${accentColor}`, borderRight:`2px solid ${accentColor}`}}/>
+        <div style={P.titleRow}>
+          <span style={{...P.title, color:accentColor, fontSize:15}}>{title}</span>
+        </div>
+        <div style={{...P.divider, background:`linear-gradient(90deg,${accentColor},transparent)`, marginBottom:16}}/>
+        <p style={{fontSize:13, color:"#b0a080", lineHeight:1.8, fontFamily:"'Courier New',monospace", margin:"0 0 22px"}}
+          dangerouslySetInnerHTML={{__html: body}} />
+        <div style={{...P.btnRow, justifyContent:"center"}}>
+          <button style={{...P.confirmBtn, background:`linear-gradient(135deg,#3a1a08,${accentColor})`, padding:"10px 36px", boxShadow:`0 0 14px ${accentColor}44`}} onClick={onClose}>
+            {btnLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Olivia Accuracy Popup ─────────────────────────────────────────────────
 function OliviaAccuracyPopup({ t, onClose }) {
@@ -1407,10 +1492,15 @@ export default function App() {
   const [showTenacityPopup, setShowTenacityPopup] = useState(true);
   const [showCredits,       setShowCredits]       = useState(false);
   const [showChangelog,     setShowChangelog]     = useState(false);
+  const creditsTimerRef = useRef(null);
   const [isabelOpen,  setIsabelOpen]  = useState(false);
   const [oliviaOpen,      setOliviaOpen]      = useState(false);
   const [oliviaAccSeen,   setOliviaAccSeen]   = useState(false);
   const [showOliviaAcc,   setShowOliviaAcc]   = useState(false);
+  const [atkPopupSeen,    setAtkPopupSeen]    = useState(false);
+  const [showAtkPopup,    setShowAtkPopup]    = useState(false);
+  const [defPopupSeen,    setDefPopupSeen]    = useState(false);
+  const [showDefPopup,    setShowDefPopup]    = useState(false);
 
   const handleOliviaClick = () => {
     if (oliviaOpen) { setOliviaOpen(false); return; }
@@ -1422,6 +1512,7 @@ export default function App() {
   const [flags, setFlags] = useState({ isCrit:true, isDebuff:true, isPvP:true, isMagic:true, isPartner:false, isIsabel:false, isMina:false, isClass:true });
   const [res,   setRes]   = useState(null);
   const [tab,   setTab]   = useState("atk");
+  useEffect(() => { setShowAtkPopup(true); setAtkPopupSeen(true); }, []);
   const [mobileView, setMobileView] = useState("inputs"); // "inputs" | "results"
 
   const ua = useCallback((f,v)=>setAtk(p=>({...p,[f]:v})),[]);
@@ -1468,6 +1559,7 @@ export default function App() {
       scrollPositions.current[tab] = scrollRef.current.scrollTop;
     }
     setTab(newTab);
+    if (newTab === "def" && !defPopupSeen) { setShowDefPopup(true); setDefPopupSeen(true); }
   };
 
   useEffect(() => {
@@ -1514,6 +1606,13 @@ export default function App() {
     <div style={S.root}>
       <div style={S.bgGrid}/><div style={S.bgGlow}/>
 
+      {/* ATK / DEF TAB POPUPS */}
+      {showAtkPopup && (
+        <InfoTabPopup title={t.atkTabPopupTitle} body={t.atkTabPopupBody} btnLabel={t.atkTabPopupBtn} accentColor="#e05520" onClose={() => setShowAtkPopup(false)} />
+      )}
+      {showDefPopup && (
+        <InfoTabPopup title={t.defTabPopupTitle} body={t.defTabPopupBody} btnLabel={t.defTabPopupBtn} accentColor="#3b82f6" onClose={() => setShowDefPopup(false)} />
+      )}
       {/* OLIVIA ACCURACY POPUP */}
       {showOliviaAcc && (
         <OliviaAccuracyPopup t={t} onClose={() => { setShowOliviaAcc(false); setOliviaAccSeen(true); setOliviaOpen(true); }} />
@@ -1567,7 +1666,15 @@ export default function App() {
               {t.changelogBtn}
             </button>
             <div style={{position:"relative"}}>
-              <button onClick={()=>setShowCredits(p=>!p)} style={M("creditsBtn")}>
+              <button onClick={() => {
+                setShowCredits(p => {
+                  if (!p) {
+                    clearTimeout(creditsTimerRef.current);
+                    creditsTimerRef.current = setTimeout(() => setShowCredits(false), 5000);
+                  }
+                  return !p;
+                });
+              }} style={M("creditsBtn")}>
                 {lang==="es" ? "ℹ Créditos" : "ℹ Credits"}
               </button>
               {showCredits && (
@@ -1596,84 +1703,92 @@ export default function App() {
       </header>
 
       <div style={M("body")}>
-        {/* LEFT */}
-        <div style={{...M("left"), display: isMobile && mobileView==="results" ? "none" : "flex"}}>
-          <div style={{...S.tabBar, overflowX: isMobile ? "auto" : "visible", scrollbarWidth:"none"}}>
-            {[["atk",t.tabAtk],["def",t.tabDef],["ch",t.tabCh],["ca",t.tabCA],["pt",t.tabPartners]].map(([k,l])=>(
-              <button key={k} style={{
-                ...M("tab"),
-                ...(tab===k?S.tabOn:{}),
-                ...(k==="ca"&&chargedAtkActive?S.tabCharged:{}),
-              }} onClick={()=>handleTabChange(k)}>{l}</button>
-            ))}
-          </div>
 
-          <div ref={scrollRef} style={M("scroll")}>
-            {tab==="atk" && Object.keys(initialAttacker).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={atk[f]} onChange={ua} isPercent={PCT_FIELDS.has(f)}/>)}
-            {tab==="def" && Object.keys(initialDefender).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={def[f]} onChange={ud} isPercent={PCT_FIELDS.has(f)}/>)}
-            {tab==="ch"  && <HeavyAtkPanel t={t} ch={ch} uc={uc} />}
-            {tab==="pt"  && <PartnersPanel t={t} flags={flags} tg={tg} isabelOpen={isabelOpen} setIsabelOpen={setIsabelOpen} oliviaOpen={oliviaOpen} setOliviaOpen={setOliviaOpen} onOliviaClick={handleOliviaClick} />}
-            {tab==="ca"  && (
-              <ChargedAtkPanel t={t}
-                chargedAtkVal={chargedAtkVal} setChargedAtkVal={setChargedAtkVal}
-                chargedAtkActive={chargedAtkActive} onToggle={handleChargedToggle}
-                chargedStacks={chargedStacks} setChargedStacks={setChargedStacks}
-              />
-            )}
-          </div>
+        {/* ── LEFT COLUMN + PARTNER SIDE PANEL (always a row on PC) ── */}
+        <div style={{display:"flex", flexDirection:"row", flex:1, minWidth:0, alignItems:"stretch"}}>
 
-          {/* FLAGS */}
-          <div style={M("flagBox")}>
-            <div style={S.flagTitle}>{t.conditions}</div>
-            <div style={S.flagGrid}>
-              {FLAG_BTNS.map(([k,l])=>(
-                <button key={k} style={{...S.flag,...(flags[k]?S.flagOn:{})}} onClick={()=>tg(k)}>{l}</button>
+          {/* LEFT */}
+          <div style={{...M("left"), display: (isMobile && mobileView==="results") || (isMobile && tab==="pt" && (oliviaOpen || isabelOpen)) ? "none" : "flex"}}>
+            <div style={{...S.tabBar, overflowX: isMobile ? "auto" : "visible", scrollbarWidth:"none"}}>
+              {[["atk",t.tabAtk],["def",t.tabDef],["ch",t.tabCh],["ca",t.tabCA],["pt",t.tabPartners]].map(([k,l])=>(
+                <button key={k} style={{
+                  ...M("tab"),
+                  ...(tab===k?S.tabOn:{}),
+                  ...(k==="ca"&&chargedAtkActive?S.tabCharged:{}),
+                }} onClick={()=>handleTabChange(k)}>{l}</button>
               ))}
-              <button style={{...S.flag,...(chargedAtkActive?S.flagCharged:{})}} onClick={handleChargedToggle}>
-                {t.flagCharged}
-              </button>
             </div>
-            <div style={{marginTop:10,fontSize:13,color:"#a08855"}}>
-              {t.claseLabel} <span style={{color:flags.isMagic?"#c4b5fd":"#fdba74",fontWeight:700}}>
-                {flags.isMagic?t.claseMagic:t.claseFisica}
-              </span>
-              {flags.isPartner&&<span style={{color:"#60a5fa",marginLeft:10}}>{t.modoOlivia}</span>}
+
+            <div ref={scrollRef} style={{...M("scroll"), ...(tab==="pt" ? {maxHeight:"none", overflowY:"visible"} : {})}}>
+              {tab==="atk" && Object.keys(initialAttacker).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={atk[f]} onChange={ua} isPercent={PCT_FIELDS.has(f)}/>)}
+              {tab==="def" && Object.keys(initialDefender).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={def[f]} onChange={ud} isPercent={PCT_FIELDS.has(f)}/>)}
+              {tab==="ch"  && <HeavyAtkPanel t={t} ch={ch} uc={uc} />}
+              {tab==="pt"  && <PartnersPanel t={t} flags={flags} tg={tg} isabelOpen={isabelOpen} setIsabelOpen={setIsabelOpen} oliviaOpen={oliviaOpen} setOliviaOpen={setOliviaOpen} onOliviaClick={handleOliviaClick} />}
+              {tab==="ca"  && (
+                <ChargedAtkPanel t={t}
+                  chargedAtkVal={chargedAtkVal} setChargedAtkVal={setChargedAtkVal}
+                  chargedAtkActive={chargedAtkActive} onToggle={handleChargedToggle}
+                  chargedStacks={chargedStacks} setChargedStacks={setChargedStacks}
+                />
+              )}
             </div>
+
+            {/* FLAGS + CALC — hidden on partners tab */}
+            {tab !== "pt" && <>
+              <div style={M("flagBox")}>
+                <div style={S.flagTitle}>{t.conditions}</div>
+                <div style={S.flagGrid}>
+                  {FLAG_BTNS.map(([k,l])=>(
+                    <button key={k} style={{...S.flag,...(flags[k]?S.flagOn:{})}} onClick={()=>tg(k)}>{l}</button>
+                  ))}
+                  <button style={{...S.flag,...(chargedAtkActive?S.flagCharged:{})}} onClick={handleChargedToggle}>
+                    {t.flagCharged}
+                  </button>
+                </div>
+                <div style={{marginTop:10,fontSize:13,color:"#a08855"}}>
+                  {t.claseLabel} <span style={{color:flags.isMagic?"#c4b5fd":"#fdba74",fontWeight:700}}>
+                    {flags.isMagic?t.claseMagic:t.claseFisica}
+                  </span>
+                  {flags.isPartner&&<span style={{color:"#60a5fa",marginLeft:10}}>{t.modoOlivia}</span>}
+                </div>
+              </div>
+              <button style={M("btn")} onClick={() => { go(); if(isMobile) setMobileView("results"); }}>{t.calcBtn}</button>
+              {isMobile && mobileView==="inputs" && (
+                <button style={{...S.btn, margin:"0 14px 14px", padding:"11px", fontSize:12, background:"#1a1a1a", border:"1px solid #3a2510"}}
+                  onClick={() => setMobileView("results")}>
+                  {t.mobileShowResults}
+                </button>
+              )}
+            </>}
           </div>
 
-          <button style={M("btn")} onClick={() => { go(); if(isMobile) setMobileView("results"); }}>{t.calcBtn}</button>
-          {isMobile && mobileView==="inputs" && (
-            <button style={{...S.btn, margin:"0 14px 14px", padding:"11px", fontSize:12, background:"#1a1a1a", border:"1px solid #3a2510"}}
-              onClick={() => setMobileView("results")}>
-              {t.mobileShowResults}
-            </button>
+          {/* PARTNER PANELS — always to the RIGHT of left on PC, below on mobile */}
+          {tab==="pt" && isabelOpen && (
+            <div style={{...S.isabelRightPanel, ...(isMobile ? {borderLeft:"none", borderTop:"1px solid #3a1a5a"} : {})}}>
+              {isMobile && (
+                <button onClick={() => setIsabelOpen(false)}
+                  style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#a78bfa", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
+                  ◀ {t.mobileShowInputs}
+                </button>
+              )}
+              <IsabelPanel t={t} />
+            </div>
           )}
-        </div>
+          {tab==="pt" && oliviaOpen && (
+            <div style={{...S.isabelRightPanel, ...(isMobile ? {borderLeft:"none", borderTop:"1px solid #3a1a5a"} : {})}}>
+              {isMobile && (
+                <button onClick={() => setOliviaOpen(false)}
+                  style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#60a5fa", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
+                  ◀ {t.mobileShowInputs}
+                </button>
+              )}
+              <OliviaPanel t={t} def={def} stats={oliviaStats} setStats={setOliviaStats} />
+            </div>
+          )}
 
-        {/* PARTNER PANELS — right side */}
-        {tab==="pt" && isabelOpen && (
-          <div style={{...M("isabelRightPanel"), ...(isMobile ? {borderLeft:"none", borderTop:"1px solid #3a1a5a"} : {})}}>
-            {isMobile && (
-              <button onClick={() => setIsabelOpen(false)}
-                style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#a78bfa", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
-                ◀ {t.mobileShowInputs}
-              </button>
-            )}
-            <IsabelPanel t={t} />
-          </div>
-        )}
-        {tab==="pt" && oliviaOpen && (
-          <div style={{...M("isabelRightPanel"), ...(isMobile ? {borderLeft:"none", borderTop:"1px solid #3a1a5a"} : {})}}>
-            {isMobile && (
-              <button onClick={() => setOliviaOpen(false)}
-                style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#60a5fa", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
-                ◀ {t.mobileShowInputs}
-              </button>
-            )}
-            <OliviaPanel t={t} def={def} stats={oliviaStats} setStats={setOliviaStats} />
-          </div>
-        )}
-        {/* RIGHT */}
+        </div>{/* end left+partner row */}
+
+        {/* RIGHT — results panel */}
         <div style={{...M("right"), display: (tab==="pt" && (isMobile || isabelOpen || oliviaOpen)) || (isMobile && mobileView==="inputs") ? "none" : "flex"}}>
           {isMobile && (
             <button onClick={() => setMobileView("inputs")}
@@ -1787,7 +1902,7 @@ const S = {
   root:{minHeight:"100vh",background:"#09090b",color:"#d6cfc4",fontFamily:"'Courier New',monospace",position:"relative",overflow:"hidden"},
   bgGrid:{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",backgroundImage:"linear-gradient(rgba(200,160,60,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,160,60,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px"},
   bgGlow:{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 15% 45%,rgba(180,40,10,0.09) 0%,transparent 55%),radial-gradient(ellipse at 85% 20%,rgba(60,40,160,0.07) 0%,transparent 50%)"},
-  hdr:{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:14,padding:"20px 28px 16px",borderBottom:"1px solid #2a1f10",background:"linear-gradient(180deg,#0f0d08,transparent)",flexWrap:"wrap"},
+  hdr:{position:"relative",zIndex:100,display:"flex",alignItems:"center",gap:14,padding:"20px 28px 16px",borderBottom:"1px solid #2a1f10",background:"linear-gradient(180deg,#0f0d08,transparent)",flexWrap:"wrap"},
   hAccent:{width:4,height:54,borderRadius:2,background:"linear-gradient(180deg,#e05520,#7a1010)",flexShrink:0},
   hTag:{fontSize:12,color:"#8a6030",letterSpacing:"0.15em"},
   hTitle:{margin:"2px 0 0",fontSize:26,fontWeight:900,letterSpacing:"0.12em",color:"#f0e0a0",textShadow:"0 0 28px rgba(220,160,40,0.35)"},
@@ -1798,13 +1913,13 @@ const S = {
   caHeaderBadge:{padding:"6px 14px",background:"rgba(124,58,237,0.22)",border:"1px solid #9d6ef8",borderRadius:2,fontSize:13,color:"#c4b5fd",fontFamily:"monospace"},
   hSword:{fontSize:30,opacity:0.12,color:"#e05520"},
   creditsBtn:{padding:"7px 13px",background:"rgba(200,160,40,0.08)",border:"1px solid #3a2810",borderRadius:2,color:"#a08040",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700,letterSpacing:"0.08em",transition:"all 0.15s",flexShrink:0},
-  creditsDropdown:{position:"absolute",top:"calc(100% + 6px)",right:0,zIndex:200,background:"#0f0d09",border:"1px solid #3a2810",borderRadius:3,padding:"12px 16px",minWidth:280,boxShadow:"0 8px 32px rgba(0,0,0,0.7)"},
+  creditsDropdown:{position:"fixed",top:80,right:16,zIndex:9999,background:"#0f0d09",border:"1px solid #3a2810",borderRadius:3,padding:"12px 16px",minWidth:280,boxShadow:"0 8px 32px rgba(0,0,0,0.9)"},
   creditsDropTitle:{fontSize:10,color:"#c08840",letterSpacing:"0.2em",borderLeft:"3px solid #e05520",paddingLeft:8,marginBottom:10},
   creditsDropRow:{display:"flex",justifyContent:"space-between",gap:16,padding:"5px 0",borderBottom:"1px solid #1a1408"},
   creditsDropLbl:{fontSize:11,color:"#5a4020"},
   creditsDropVal:{fontSize:11,color:"#a08040",fontFamily:"monospace",textAlign:"right"},
   tenacityBtn:{padding:"7px 13px",background:"rgba(202,138,4,0.12)",border:"1px solid #78350f",borderRadius:2,color:"#fbbf24",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700,letterSpacing:"0.08em",transition:"all 0.15s",flexShrink:0},
-  body:{position:"relative",zIndex:1,display:"flex",minHeight:"calc(100vh - 96px)"},
+  body:{position:"relative",zIndex:1,display:"flex",flexDirection:"row",alignItems:"stretch",minHeight:"calc(100vh - 96px)"},
   left:{width:370,flexShrink:0,display:"flex",flexDirection:"column",borderRight:"1px solid #1e1408"},
   right:{flex:1,display:"flex",flexDirection:"column",minWidth:0},
   tabBar:{display:"flex",borderBottom:"1px solid #1e1408"},
