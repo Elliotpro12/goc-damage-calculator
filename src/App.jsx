@@ -15,7 +15,7 @@ function useIsMobile() {
 const T = {
   es: {
     tagline: "// GUARDIANS OF CLOUDIA — SIMULACIÓN TÁCTICA",
-    title: "CALCULADORA DE DAÑO  v1.0",
+    title: "CALCULADORA DE DAÑO  v1.1",
     tabAtk: "⚔ ATACANTE", tabDef: "🛡 DEFENSOR", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 ATK CARGADO",
     conditions: "CONDICIONES DEL GOLPE",
     flagCrit: "💥 Crítico", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -43,8 +43,8 @@ const T = {
     tenacityPopupTitle: "⚠ AVISO — PRECISIÓN DEL CÁLCULO",
     tenacityPopupBody: [
       "El funcionamiento de <strong>Tenacidad</strong> sigue siendo un misterio — aún se desconoce cómo convierte sus stats en <strong>Reducción de Penetración</strong> y/o <strong>Bono de Daño</strong>.",
-      "Esta calculadora es <strong>precisa pero no al 100%</strong>. Actualmente se asume que tienes <strong>Tenacidad máxima</strong>, lo cual puede no reflejar tu situación real.",
-      "Esto cambiará en una <strong>próxima versión</strong> a medida que se descifre la mecánica. Existe un <strong>margen de error</strong> en los resultados.",
+      "Esta calculadora tiene una precisión aproximada del <strong>~80%</strong>. Los resultados pueden diferir del juego real debido a <strong>Tenacidad</strong> y/o <strong>aumentos o disminuciones de stats en tiempo real</strong> durante el combate.",
+      "Úsala como referencia orientativa — no como valor exacto.",
     ],
     tenacityPopupConfirm: "ENTENDIDO",
     tenacityPopupBtn: "⚠ Precisión",
@@ -80,7 +80,7 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
-      { version:"v1.0", date:"Marzo 2026", label:"Versión Completa",
+      { version:"v1.1", date:"Marzo 2026", label:"Versión Completa",
         changes:[
           "Daño base sin crítico añadido al display de resultados (panel principal y Olivia)",
           "Etiquetas de resultados actualizadas con crítico y debuff donde corresponde",
@@ -217,7 +217,7 @@ const T = {
       { label: "Fórmulas y mecánicas", value: "xDarKz" },
       { label: "Desarrollo UI / React", value: "Claude (Anthropic)" },
       { label: "Juego", value: "Guardians of Cloudia" },
-      { label: "Versión", value: "v1.0" },
+      { label: "Versión", value: "v1.1" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Bonus plano de skill",
@@ -250,13 +250,13 @@ const T = {
     secChargedAtk: "HEAVY ATK — Calculo_ataque_fuerte()",
     defPost: "Defensa post-penetración", atkEff: "Ataque efectivo", danoBase: "Daño base (× escalado)",
     modGeneral: "Bono/Red. Daño General", modMagic: "Bono/Red. Daño Mágico", modPhys: "Bono/Red. Daño Físico",
-    modCrit: "Crítico neto", modDebuff: "Debuff neto", modPvP: "PvP neto", modClass: "vs Clase enemiga",
+    modCrit: "Crítico neto", modDebuff: "Debuff neto", debuffCancelled: "☠ Debuff cancelado — resist. enemigo ≥ tu Debuff DMG", modPvP: "PvP neto", modClass: "vs Clase enemiga",
     modChargedDmg: "Bono daño (cargado)", modChargedRed: "Red. daño (cargado)",
     multTotal: "Multiplicador Total",
-    danoNoCrit: "Daño base (sin crítico)",
-    danoSinDebuff: "Daño base + crítico (sin debuff)", danoConDebuff: "Daño + crítico + debuff",
-    heavyDebuff: "Heavy ×1.30 + crítico + debuff", heavyNormal: "Heavy hit ×1.30 + crítico",
-    barNormal: "Base + Crít.", barDebuff: "Crít. + Debuff", barHeavy: "Heavy + Crít. + Debuff",
+    danoNoCrit: "Daño base",
+    danoSinDebuff: "Daño base + crítico (sin debuff, sin heavy)", danoConDebuff: "Daño + crítico + debuff",
+    heavyOnly: "Heavy hit ×1.30", heavyNormal: "Heavy hit ×1.30 + crít.", heavyDebuff: "Heavy hit ×1.30 + crít. + debuff",
+    barNormal: "Base + Crít.", barNoCritHeavy: "Sin crít. + Heavy", barCritHeavy: "Crít. + Heavy", barBaseDebuff: "Base + Debuff", barBaseDebuffHeavy: "Base + Debuff + Heavy", barDebuff: "Crít. + Debuff", barDebuffHeavy: "Crít. + Debuff + Heavy", secChartDebuff: "DEBUFF DMG",
     probAcierto: "Probabilidad total de acierto", dmgRecibido: "Efecto 'DMG recibido aumentado' dejado por Heavy ATK (debuff)",
     heavyInfoBtn: "❓ ¿Cómo funciona Heavy ATK?",
     heavyInfoTitle: "MECÁNICA — HEAVY ATK",
@@ -308,7 +308,7 @@ const T = {
   },
   en: {
     tagline: "// GUARDIANS OF CLOUDIA — TACTICAL SIMULATION",
-    title: "DAMAGE CALCULATOR  v1.0",
+    title: "DAMAGE CALCULATOR  v1.1",
     tabAtk: "⚔ ATTACKER", tabDef: "🛡 DEFENDER", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 CHARGED ATK",
     conditions: "HIT CONDITIONS",
     flagCrit: "💥 Critical", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -373,7 +373,7 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
-      { version:"v1.0", date:"March 2026", label:"Full Release",
+      { version:"v1.1", date:"March 2026", label:"Full Release",
         changes:[
           "Base damage without crit added to results display (main panel and Olivia)",
           "Result labels updated with crit and debuff where applicable",
@@ -510,7 +510,7 @@ const T = {
       { label: "Formulas & mechanics", value: "xDarKz" },
       { label: "UI / React development", value: "Claude (Anthropic)" },
       { label: "Game", value: "Guardians of Cloudia" },
-      { label: "Version", value: "v1.0" },
+      { label: "Version", value: "v1.1" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Skill flat bonus",
@@ -543,13 +543,13 @@ const T = {
     secChargedAtk: "HEAVY ATK — Calculo_ataque_fuerte()",
     defPost: "Defense post-penetration", atkEff: "Effective attack", danoBase: "Base damage (× scaling)",
     modGeneral: "DMG Bonus/Red. General", modMagic: "Magic DMG Bonus/Red.", modPhys: "Physical DMG Bonus/Red.",
-    modCrit: "Net critical", modDebuff: "Net debuff", modPvP: "Net PvP", modClass: "vs Enemy class",
+    modCrit: "Net critical", modDebuff: "Net debuff", debuffCancelled: "☠ Debuff cancelled — enemy resist. ≥ your Debuff DMG", modPvP: "Net PvP", modClass: "vs Enemy class",
     modChargedDmg: "DMG bonus (charged)", modChargedRed: "DMG red. (charged)",
     multTotal: "Total Multiplier",
-    danoNoCrit: "Base damage (no crit)",
-    danoSinDebuff: "Base + crit damage (no debuff)", danoConDebuff: "Dmg + crit + debuff",
-    heavyDebuff: "Heavy ×1.30 + crit + debuff", heavyNormal: "Heavy hit ×1.30 + crit",
-    barNormal: "Base + Crit.", barDebuff: "Crit. + Debuff", barHeavy: "Heavy + Crit. + Debuff",
+    danoNoCrit: "Base damage",
+    danoSinDebuff: "Base + crit damage (no debuff, no heavy)", danoConDebuff: "Dmg + crit + debuff",
+    heavyOnly: "Heavy hit ×1.30", heavyNormal: "Heavy hit ×1.30 + crit", heavyDebuff: "Heavy hit ×1.30 + crit + debuff",
+    barNormal: "Base + Crit.", barNoCritHeavy: "No crit + Heavy", barCritHeavy: "Crit. + Heavy", barBaseDebuff: "Base + Debuff", barBaseDebuffHeavy: "Base + Debuff + Heavy", barDebuff: "Crit. + Debuff", barDebuffHeavy: "Crit. + Debuff + Heavy", secChartDebuff: "DEBUFF DMG",
     probAcierto: "Total hit probability", dmgRecibido: "'Damage received increase' effect left by Heavy ATK (debuff)",
     heavyInfoBtn: "❓ How does Heavy ATK work?",
     heavyInfoTitle: "MECHANICS — HEAVY ATK",
@@ -657,9 +657,9 @@ function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive,
   const dano_magico  = atk.bonoDanoMagico - def.reduccionDanoMagico;
   const dano_fisico  = atk.bonoDanoFisico - def.reduccionDanoFisico;
   const dano_tipo    = isMagic ? dano_magico : dano_fisico;
-  const dano_critico = isCrit   ? atk.danoCritico - def.reduccionDanoCritico : 0;
-  const debuff_mod   = isDebuff ? atk.debuffDmg   - def.reduccionDebuff       : 0;
-  const pvp_mod      = isPvP    ? Math.max(0, atk.pvpDmgBonus - def.pvpDmgReduccion) : 0;
+  const dano_critico = isCrit ? Math.max(0, atk.danoCritico - def.reduccionDanoCritico) : 0;
+  const debuff_mod   = isDebuff ? Math.max(0, atk.debuffDmg - def.reduccionDebuff) : 0;
+  const pvp_mod      = isPvP    ? atk.pvpDmgBonus - def.pvpDmgReduccion : 0;
   const class_mod    = (isPvP && isClass && !isPartner)
     ? Math.max(0, atk.dmgToEnemyClass - def.reduccionDmgFromClass) : 0;
 
@@ -667,8 +667,8 @@ function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive,
     ? dmg_bonus + dano_tipo
     : dmg_bonus + dano_tipo + dano_critico + pvp_mod + class_mod;
 
-  const danofinal_nocrit = danobase * (dmg_bonus + dano_tipo);
-  const danofinal_base   = danobase * multiplicador;
+  const danofinal_nocrit = Math.max(0, danobase * (dmg_bonus + dano_tipo));
+  const danofinal_base   = Math.max(0, danobase * multiplicador);
   const danofinal_debuff = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
   const heavy_raw        = Math.abs(danofinal_base - danofinal_base * 1.30);
   const total_hd         = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
@@ -682,6 +682,10 @@ function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive,
     defensafinal, ataquefinal, danobase,
     dmg_bonus, dano_tipo, dano_critico, debuff_mod, pvp_mod, class_mod,
     multiplicador, danofinal_nocrit, danofinal_base, danofinal_debuff, heavy_calc,
+    heavy_nocrit: danofinal_nocrit * 1.30,
+    danofinal_base_debuff: isDebuff ? danofinal_nocrit * (1 + debuff_mod) : danofinal_nocrit,
+    heavy_base_debuff: isDebuff ? danofinal_nocrit * (1 + debuff_mod) * 1.30 : danofinal_nocrit * 1.30,
+    heavy_base: danofinal_base * 1.30,
     prob_acierto, dmg_recibido,
     ca, effectiveBonoDano, effectiveReduccion,
   };
@@ -1030,7 +1034,7 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
         <div style={{...P.noteBox, background:"rgba(202,138,4,0.08)", border:"1px solid #4a3800"}}>
           <span style={P.noteIcon}>🔍</span>
           <span style={{...P.noteText, color:"#fbbf24"}}>
-            Guardians of Cloudia — Damage Calculator v1.0
+            Guardians of Cloudia — Damage Calculator v1.1
           </span>
         </div>
         <div style={{...P.btnRow, justifyContent:"center"}}>
@@ -1177,7 +1181,7 @@ function calcOliviaDamage({ atk, def, isCrit, isDebuff }) {
 
 function OliviaPanel({ t, def, stats, setStats }) {
   const [isCrit,   setIsCrit]   = useState(true);
-  const [isDebuff, setIsDebuff] = useState(true);
+  const [isDebuff, setIsDebuff] = useState(false);
   const [res,      setRes]      = useState(null);
   const us = (f, v) => setStats(p => ({...p, [f]: v}));
 
@@ -1239,7 +1243,7 @@ function OliviaPanel({ t, def, stats, setStats }) {
             [t.modGeneral,  res.dmg_bonus],
             [t.modMagic, res.dano_magico],
             ...(isCrit   ? [[t.modCrit,   res.dano_critico]] : []),
-            ...(isDebuff ? [[t.modDebuff, res.debuff_mod]]   : []),
+            ...(isDebuff && res.debuff_mod !== 0 ? [[t.modDebuff, res.debuff_mod]] : []),
           ].map(([lbl, val]) => {
             const c = val > 0 ? "#6ee7a0" : val < 0 ? "#fca5a5" : "#7a7a7a";
             return (
@@ -1251,18 +1255,21 @@ function OliviaPanel({ t, def, stats, setStats }) {
               </div>
             );
           })}
+          {isDebuff && res.debuff_mod === 0 && (
+            <div style={{...S.isabelResultRow, padding:"4px 0"}}>
+              <span style={{fontSize:11,color:"#f87171",fontStyle:"italic",fontFamily:"'Courier New',monospace"}}>{t.debuffCancelled}</span>
+            </div>
+          )}
           <div style={S.isabelResultRow}>
             <span style={S.isabelResultLbl}>{t.multTotal}</span>
             <span style={{...S.isabelResultVal,color:"#fcd34d"}}>×{res.multiplicador.toFixed(5)}</span>
           </div>
 
           <div style={{...S.isabelResultDivider, marginTop:10}}>{t.secFinal}</div>
-          {isCrit && (
-            <div style={S.isabelResultRow}>
-              <span style={S.isabelResultLbl}>{t.danoNoCrit}</span>
-              <span style={{...S.isabelResultVal,color:"#6a7a60"}}>{Math.round(res.danofinal_nocrit).toLocaleString("es-ES")}</span>
-            </div>
-          )}
+          <div style={S.isabelResultRow}>
+            <span style={S.isabelResultLbl}>{t.danoNoCrit}</span>
+            <span style={{...S.isabelResultVal,color:"#6a7a60"}}>{Math.round(res.danofinal_nocrit).toLocaleString("es-ES")}</span>
+          </div>
           <div style={S.isabelResultRow}>
             <span style={S.isabelResultLbl}>{t.oliviaPreRed}</span>
             <span style={{...S.isabelResultVal,color:"#94a3b8"}}>{Math.round(res.danofinal_pre).toLocaleString("es-ES")}</span>
@@ -1282,7 +1289,7 @@ function OliviaPanel({ t, def, stats, setStats }) {
             </div>
           )}
           <div style={S.isabelResultRow}>
-            <span style={S.isabelResultLbl}>{isDebuff?t.heavyDebuff:t.heavyNormal}</span>
+            <span style={S.isabelResultLbl}>{isDebuff ? t.heavyDebuff : isCrit ? t.heavyNormal : t.heavyOnly}</span>
             <span style={{...S.isabelResultVal,color:"#f87171",fontSize:20,fontWeight:700}}>{Math.round(res.heavy_calc).toLocaleString("es-ES")}</span>
           </div>
         </div>
@@ -1314,7 +1321,7 @@ function calcIsabelHeal(s) {
   const pve_per_tick            = ((1 + s.healing_bonus) * base_healing) / 3;
   let pvp                       = base_healing * 0.25;
   pvp                           = pvp / 3;
-  pvp                           = pvp * (1 + (s.healing_bonus * total_healing_reduction));
+  pvp                           = pvp * (1 + s.healing_bonus);
   pvp                           = pvp + (s.isabel_skill_scaling_flat_bonus / 3);
   return {
     partners_sum_total_hp,
@@ -1603,7 +1610,7 @@ export default function App() {
   const [oliviaStats,  setOliviaStats]  = useState(() => {
     try { const s = localStorage.getItem("goc_olivia"); return s ? {...initialOlivia,...JSON.parse(s)} : initialOlivia; } catch { return initialOlivia; }
   });
-  const [flags, setFlags] = useState({ isCrit:true, isDebuff:true, isPvP:true, isMagic:true, isPartner:false, isIsabel:false, isMina:false, isClass:true });
+  const [flags, setFlags] = useState({ isCrit:true, isDebuff:false, isPvP:true, isMagic:true, isPartner:false, isIsabel:false, isMina:false, isClass:true });
   const [res,   setRes]   = useState(null);
   const [tab,   setTab]   = useState("atk");
   useEffect(() => { setShowAtkPopup(true); setAtkPopupSeen(true); }, []);
@@ -1931,7 +1938,13 @@ export default function App() {
               <Mod label={t.modGeneral}                              val={res.dmg_bonus}/>
               <Mod label={flags.isMagic?t.modMagic:t.modPhys}       val={res.dano_tipo}/>
               {flags.isCrit   && <Mod label={t.modCrit}   val={res.dano_critico}/>}
-              {flags.isDebuff && <Mod label={t.modDebuff} val={res.debuff_mod}/>}
+              {flags.isDebuff && (
+                res.debuff_mod === 0
+                  ? <div style={{...S.mRow, padding:"6px 0"}}>
+                      <span style={{...S.mLbl, color:"#f87171", fontSize:12, fontStyle:"italic"}}>{t.debuffCancelled}</span>
+                    </div>
+                  : <Mod label={t.modDebuff} val={res.debuff_mod}/>
+              )}
               {flags.isPvP    && <Mod label={t.modPvP}    val={res.pvp_mod}/>}
               {flags.isPvP&&flags.isClass&&!flags.isPartner && <Mod label={t.modClass} val={res.class_mod}/>}
 
@@ -1980,30 +1993,52 @@ export default function App() {
               )}
 
               <SecTitle>{t.secFinal}</SecTitle>
-              {flags.isCrit && <RRow label={t.danoNoCrit} value={res.danofinal_nocrit} color="#6a7a60"/>}
+              <RRow label={t.danoNoCrit} value={res.danofinal_nocrit} color="#6a7a60"/>
               <RRow label={t.danoSinDebuff} value={res.danofinal_base}   color="#94a3b8"/>
               {flags.isDebuff&&<RRow label={t.danoConDebuff} value={res.danofinal_debuff} color="#fb923c" bold size={17}/>}
-              <RRow label={flags.isDebuff?t.heavyDebuff:t.heavyNormal} value={res.heavy_calc} color="#f87171" bold size={22}/>
+              <RRow label={flags.isDebuff ? t.heavyDebuff : flags.isCrit ? t.heavyNormal : t.heavyOnly} value={res.heavy_calc} color="#f87171" bold size={22}/>
 
               <SecTitle>{t.secChart}</SecTitle>
-              {[
-                [t.barNormal, res.danofinal_base,   "#fcd34d,#fb923c"],
-                ...(flags.isDebuff?[[t.barDebuff,res.danofinal_debuff,"#fb923c,#ea580c"]]:[]),
-                [t.barHeavy,  res.heavy_calc,        "#f87171,#dc2626"],
-              ].map(([lbl,val,grad])=>{
-                const pct = Math.min(100,(val/(res.heavy_calc||1))*100);
-                return (
-                  <div key={lbl} style={S.barRow}>
-                    <span style={S.barLbl}>{lbl}</span>
-                    <div style={S.barTrack}>
-                      <div style={{...S.barFill,width:`${pct}%`,background:`linear-gradient(90deg,${grad})`}}/>
+              {(() => {
+                const maxVal = flags.isDebuff ? res.heavy_calc : res.heavy_base;
+                const baseRows = [
+                  ...(flags.isCrit ? [[t.danoNoCrit,       res.danofinal_nocrit, "#6a7a60,#4a5a40"]] : []),
+                  ...(flags.isCrit ? [[t.barNoCritHeavy,   res.heavy_nocrit,     "#7a9a60,#4a6a30"]] : []),
+                  [t.barNormal,                             res.danofinal_base,   "#fcd34d,#d97706"],
+                  [t.barCritHeavy,                          res.heavy_base,       "#f87171,#dc2626"],
+                ];
+                const debuffRows = flags.isDebuff ? [
+                  [t.barBaseDebuff,      res.danofinal_base_debuff, "#f59e0b,#d97706"],
+                  [t.barBaseDebuffHeavy, res.heavy_base_debuff,     "#fbbf24,#b45309"],
+                  [t.barDebuff,          res.danofinal_debuff,      "#fb923c,#ea580c"],
+                  [t.barDebuffHeavy,     res.heavy_calc,            "#ef4444,#b91c1c"],
+                ] : [];
+                const renderBar = (lbl, val, grad) => {
+                  const pct = Math.min(100,(val/(maxVal||1))*100);
+                  return (
+                    <div key={lbl} style={S.barRow}>
+                      <span style={{...S.barLbl, width:130, overflow:"visible", whiteSpace:"nowrap"}}>{lbl}</span>
+                      <div style={S.barTrack}>
+                        <div style={{...S.barFill,width:`${pct}%`,background:`linear-gradient(90deg,${grad})`}}/>
+                      </div>
+                      <span style={{fontSize:12,color:"#a08855",width:90,textAlign:"right",fontFamily:"monospace"}}>
+                        {Math.round(val).toLocaleString("es-ES")}
+                      </span>
                     </div>
-                    <span style={{fontSize:13,color:"#a08855",width:100,textAlign:"right",fontFamily:"monospace"}}>
-                      {Math.round(val).toLocaleString("es-ES")}
-                    </span>
-                  </div>
+                  );
+                };
+                return (
+                  <>
+                    {baseRows.map(([l,v,g]) => renderBar(l,v,g))}
+                    {flags.isDebuff && (
+                      <>
+                        <div style={{...S.secTitle, marginTop:14, marginBottom:8}}>{t.secChartDebuff}</div>
+                        {debuffRows.map(([l,v,g]) => renderBar(l,v,g))}
+                      </>
+                    )}
+                  </>
                 );
-              })}
+              })()}
 
             </div>
           )}
