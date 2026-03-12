@@ -15,7 +15,7 @@ function useIsMobile() {
 const T = {
   es: {
     tagline: "// GUARDIANS OF CLOUDIA — SIMULACIÓN TÁCTICA",
-    title: "CALCULADORA DE DAÑO  v0.7",
+    title: "CALCULADORA DE DAÑO  v0.8",
     tabAtk: "⚔ ATACANTE", tabDef: "🛡 DEFENSOR", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 ATK CARGADO",
     conditions: "CONDICIONES DEL GOLPE",
     flagCrit: "💥 Crítico", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -73,12 +73,103 @@ const T = {
       bonoDano:"Bono de Daño", bonoDanoFisico:"Bono Daño Físico", bonoDanoMagico:"Bono Daño Mágico",
       danoCritico:"Mult. Crítico", debuffDmg:"Daño por Debuff", trueDmg:"True Damage",
     },
+    changelogBtn: "📋 Changelog",
+    changelogTitle: "CHANGELOG",
+    changelog: [
+      {
+        version: "v0.8", date: "2025", label: "Deploy & Responsive",
+        changes: [
+          "Diseño adaptado para móvil y PC (responsive completo)",
+          "En móvil: vista de inputs y resultados separadas con navegación",
+          "Publicado en Vercel — accesible desde cualquier dispositivo",
+          "Créditos añadidos al header (dropdown)",
+          "Popup de aviso de precisión (Tenacidad) al iniciar la app",
+          "Botón ⚠ Precisión permanente en el header",
+        ]
+      },
+      {
+        version: "v0.6", date: "2025", label: "Partners — Olivia & Isabel",
+        changes: [
+          "Nueva pestaña 👥 Partners separada de las condiciones",
+          "❄️ Olivia — panel de daño propio con stats independientes",
+          "Olivia: solo mágico, sin PvP ni clase, reducción artefacto −25%",
+          "Popup de advertencia al activar Olivia (fórmula en descifrado)",
+          "Popup de precisión específico al abrir el panel de Olivia",
+          "🌿 Isabel — calculadora de curación Skill 1 completa",
+          "Isabel: PvE y PvP (×3 ticks), healing bonus, reducciones fijas",
+          "🛡 Mina añadida como placeholder (funcionalidad próximamente)",
+          "Panels de partner se abren a la derecha en PC",
+          "Memoria de stats de Olivia (no se resetean al cerrar)",
+        ]
+      },
+      {
+        version: "v0.5", date: "2025", label: "Heavy ATK & Popups",
+        changes: [
+          "'Ataque Fuerte' renombrado a 'Heavy ATK' en toda la app",
+          "Pestaña ⚡ Heavy ATK con panel propio: stats, resultados en vivo",
+          "Botón ❓ informativo sobre mecánica de Heavy ATK (colapsable)",
+          "Heavy ATK movido fuera del panel de resultados principales",
+          "Popup de aviso al activar Ataque Cargado (se muestra una sola vez)",
+          "Popup de aviso al activar modo Olivia (se muestra una sola vez)",
+          "Etiqueta 'DMG recibido' aclarada como efecto dejado por Heavy ATK",
+        ]
+      },
+      {
+        version: "v0.4", date: "2025", label: "Ataque Cargado & Partners",
+        changes: [
+          "Nueva pestaña 🔋 ATK Cargado con valor editable y barra visual",
+          "Selector de stacks ×1 / ×2 / ×3 (afectan True DMG y True DMG Red.)",
+          "Fórmulas: bono dmg, red. dmg, true dmg y true dmg red. por stack",
+          "Badge en el header mostrando valor y stacks activos",
+          "Flag rápido de Cargado en Condiciones del Golpe",
+          "Modo Olivia (partner): desactiva modificadores de clase",
+          "Toggle clase Mágica / Física para el tipo de daño",
+          "Indicador de clase activa y modo Olivia en panel de flags",
+        ]
+      },
+      {
+        version: "v0.3", date: "2025", label: "Idiomas & Alineación",
+        changes: [
+          "Toggle de idioma 🇪🇸 ES / 🇺🇸 EN en el header",
+          "Traducción completa de todos los textos al inglés",
+          "Label 'Idioma / Language' sobre los botones de idioma",
+          "Alineación corregida en todos los inputs (ancho fijo por columna)",
+          "True DMG y campos sin % alineados correctamente con los demás",
+          "Scroll independiente por pestaña con memoria de posición",
+          "Campo charged_atk eliminado de la pestaña Atacante",
+        ]
+      },
+      {
+        version: "v0.2", date: "2025", label: "Clases & Mejoras UI",
+        changes: [
+          "Soporte para clase Física y Mágica en el multiplicador de daño",
+          "Stats separados: bonoDanoFisico / bonoDanoMagico y sus reducciones",
+          "Modificadores con indicadores ▲ verde / ▼ rojo por dirección",
+          "Sección de comparativa visual con barras de daño",
+          "Tamaños de fuente aumentados en toda la interfaz",
+          "Colores más brillantes y mayor contraste en el tema oscuro",
+          "Panel de resultados con cadena de cálculo base visible",
+        ]
+      },
+      {
+        version: "v0.1", date: "2025", label: "Versión Inicial",
+        changes: [
+          "Traducción de la fórmula de daño C++ a React",
+          "Pestañas de Atacante, Defensor y Heavy ATK con stats editables",
+          "Condiciones del golpe: Crítico, Debuff, PvP, vs Clase",
+          "Cálculo en vivo: defensa post-pen, ataque efectivo, daño base",
+          "Multiplicador total con todos los modificadores netos",
+          "Daño sin debuff, con debuff y Heavy hit (×1.30)",
+          "Heavy ATK: probabilidad de acierto y efecto DMG recibido",
+        ]
+      },
+    ],
     creditsTitle: "CRÉDITOS",
     creditsLines: [
       { label: "Fórmulas y mecánicas", value: "xDarKz" },
       { label: "Desarrollo UI / React", value: "Claude (Anthropic)" },
       { label: "Juego", value: "Guardians of Cloudia" },
-      { label: "Versión", value: "v0.7 — Work in Progress" },
+      { label: "Versión", value: "v0.8 — Work in Progress" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Bonus plano de skill",
@@ -160,7 +251,7 @@ const T = {
   },
   en: {
     tagline: "// GUARDIANS OF CLOUDIA — TACTICAL SIMULATION",
-    title: "DAMAGE CALCULATOR  v0.7",
+    title: "DAMAGE CALCULATOR  v0.8",
     tabAtk: "⚔ ATTACKER", tabDef: "🛡 DEFENDER", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 CHARGED ATK",
     conditions: "HIT CONDITIONS",
     flagCrit: "💥 Critical", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -218,12 +309,103 @@ const T = {
       bonoDano:"Damage Bonus", bonoDanoFisico:"Physical DMG Bonus", bonoDanoMagico:"Magic DMG Bonus",
       danoCritico:"Crit Multiplier", debuffDmg:"Debuff Damage", trueDmg:"True Damage",
     },
+    changelogBtn: "📋 Changelog",
+    changelogTitle: "CHANGELOG",
+    changelog: [
+      {
+        version: "v0.8", date: "2025", label: "Deploy & Responsive",
+        changes: [
+          "Full responsive design for mobile and PC",
+          "Mobile: separate input/results views with navigation",
+          "Published on Vercel — accessible from any device",
+          "Credits added to header (dropdown)",
+          "Tenacity accuracy warning popup on app load",
+          "Permanent ⚠ Accuracy button in header",
+        ]
+      },
+      {
+        version: "v0.6", date: "2025", label: "Partners — Olivia & Isabel",
+        changes: [
+          "New 👥 Partners tab separated from hit conditions",
+          "❄️ Olivia — own damage panel with independent stats",
+          "Olivia: magic only, no PvP or class mods, −25% artifact reduction",
+          "Warning popup when activating Olivia (formula being figured out)",
+          "Accuracy popup specific to opening Olivia's panel",
+          "🌿 Isabel — full Skill 1 healing calculator",
+          "Isabel: PvE and PvP (×3 ticks), healing bonus, fixed reductions",
+          "🛡 Mina added as placeholder (functionality coming soon)",
+          "Partner panels open to the right on PC",
+          "Olivia stats persist when closing and reopening the panel",
+        ]
+      },
+      {
+        version: "v0.5", date: "2025", label: "Heavy ATK & Popups",
+        changes: [
+          "'Ataque Fuerte' renamed to 'Heavy ATK' throughout the app",
+          "⚡ Heavy ATK tab with own panel: stats and live results",
+          "❓ Info button explaining Heavy ATK mechanics (collapsible)",
+          "Heavy ATK results moved out of the main damage results panel",
+          "Warning popup when activating Charged Attack (shown once only)",
+          "Warning popup when activating Olivia mode (shown once only)",
+          "'DMG received' label clarified as effect left by Heavy ATK",
+        ]
+      },
+      {
+        version: "v0.4", date: "2025", label: "Charged Attack & Partners",
+        changes: [
+          "New 🔋 Charged ATK tab with editable value and visual bar",
+          "Stack selector ×1 / ×2 / ×3 (affect True DMG and True DMG Red.)",
+          "Formulas: dmg bonus, dmg red., true dmg and true dmg red. per stack",
+          "Header badge showing active value and stacks",
+          "Quick Charged flag in Hit Conditions",
+          "Olivia mode (partner): disables class modifiers",
+          "Magic / Physical class toggle for damage type",
+          "Active class and Olivia mode indicator in flags panel",
+        ]
+      },
+      {
+        version: "v0.3", date: "2025", label: "Languages & Alignment",
+        changes: [
+          "Language toggle 🇪🇸 ES / 🇺🇸 EN in header",
+          "Full English translation of all texts",
+          "'Idioma / Language' label above language buttons",
+          "Input alignment fixed across all tabs (fixed column width)",
+          "True DMG and non-% fields correctly aligned with others",
+          "Independent scroll per tab with position memory",
+          "charged_atk field removed from Attacker tab",
+        ]
+      },
+      {
+        version: "v0.2", date: "2025", label: "Classes & UI Improvements",
+        changes: [
+          "Support for Physical and Magic class in damage multiplier",
+          "Separate stats: bonoDanoFisico / bonoDanoMagico and reductions",
+          "Modifiers with ▲ green / ▼ red directional indicators",
+          "Visual comparison section with damage bars",
+          "Font sizes increased throughout the interface",
+          "Brighter colors and higher contrast on dark theme",
+          "Results panel showing full base calculation chain",
+        ]
+      },
+      {
+        version: "v0.1", date: "2025", label: "Initial Version",
+        changes: [
+          "C++ damage formula translated to React",
+          "Attacker, Defender and Heavy ATK tabs with editable stats",
+          "Hit conditions: Critical, Debuff, PvP, vs Class",
+          "Live calculation: post-pen defense, effective attack, base damage",
+          "Total multiplier with all net modifiers",
+          "Damage without debuff, with debuff and Heavy hit (×1.30)",
+          "Heavy ATK: hit probability and DMG received effect",
+        ]
+      },
+    ],
     creditsTitle: "CREDITS",
     creditsLines: [
       { label: "Formulas & mechanics", value: "xDarKz" },
       { label: "UI / React development", value: "Claude (Anthropic)" },
       { label: "Game", value: "Guardians of Cloudia" },
-      { label: "Version", value: "v0.7 — Work in Progress" },
+      { label: "Version", value: "v0.8 — Work in Progress" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Skill flat bonus",
@@ -634,6 +816,64 @@ function ChargedAtkPanel({ t, chargedAtkVal, setChargedAtkVal, chargedAtkActive,
 }
 
 
+// ── Changelog Popup ───────────────────────────────────────────────────────
+function ChangelogPopup({ t, onClose }) {
+  const versionColors = {
+    "v0.8":"#fcd34d", "v0.6":"#a78bfa", "v0.5":"#f87171",
+    "v0.4":"#60a5fa", "v0.3":"#34d399", "v0.2":"#fb923c", "v0.1":"#94a3b8",
+  };
+  return (
+    <div style={P.overlay} onClick={onClose}>
+      <div style={{...P.modal, maxWidth:600, padding:"24px 28px", maxHeight:"85vh", overflowY:"auto"}}
+        onClick={e => e.stopPropagation()}>
+        <div style={{...P.corner, top:0, left:0, borderTop:"2px solid #ca8a04", borderLeft:"2px solid #ca8a04"}}/>
+        <div style={{...P.corner, top:0, right:0, borderTop:"2px solid #ca8a04", borderRight:"2px solid #ca8a04"}}/>
+        <div style={{...P.corner, bottom:0, left:0, borderBottom:"2px solid #ca8a04", borderLeft:"2px solid #ca8a04"}}/>
+        <div style={{...P.corner, bottom:0, right:0, borderBottom:"2px solid #ca8a04", borderRight:"2px solid #ca8a04"}}/>
+
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18}}>
+          <div style={P.titleRow}>
+            <span style={{...P.warningIcon, filter:"drop-shadow(0 0 8px rgba(202,138,4,0.6))"}}>📋</span>
+            <span style={{...P.title, color:"#fcd34d"}}>{t.changelogTitle}</span>
+          </div>
+          <button onClick={onClose} style={{background:"transparent", border:"none", color:"#6a5030", cursor:"pointer", fontSize:20, fontFamily:"inherit"}}>✕</button>
+        </div>
+        <div style={{...P.divider, background:"linear-gradient(90deg,#ca8a04,transparent)", marginBottom:20}}/>
+
+        {t.changelog.map((v, vi) => (
+          <div key={v.version} style={{marginBottom: vi < t.changelog.length-1 ? 22 : 0}}>
+            {/* Version header */}
+            <div style={{display:"flex", alignItems:"baseline", gap:10, marginBottom:10}}>
+              <span style={{
+                fontFamily:"monospace", fontSize:15, fontWeight:900,
+                color: versionColors[v.version] || "#fcd34d",
+                textShadow:`0 0 12px ${versionColors[v.version]}44`,
+              }}>{v.version}</span>
+              <span style={{fontSize:12, color:"#7a6030", fontWeight:700, letterSpacing:"0.1em"}}>{v.label}</span>
+              <span style={{fontSize:11, color:"#4a3820", marginLeft:"auto"}}>{v.date}</span>
+            </div>
+            {/* Changes list */}
+            <div style={{borderLeft:"2px solid #2a1e08", paddingLeft:14, display:"flex", flexDirection:"column", gap:5}}>
+              {v.changes.map((c, ci) => (
+                <div key={ci} style={{display:"flex", gap:8, alignItems:"flex-start"}}>
+                  <span style={{color: versionColors[v.version] || "#fcd34d", fontSize:10, marginTop:3, flexShrink:0}}>◆</span>
+                  <span style={{fontSize:12, color:"#b0a080", lineHeight:1.6, fontFamily:"'Courier New',monospace"}}>{c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div style={{...P.btnRow, justifyContent:"center", marginTop:24}}>
+          <button style={{...P.confirmBtn, background:"linear-gradient(135deg,#78350f,#ca8a04)", padding:"10px 36px"}} onClick={onClose}>
+            {t.oliviaAccConfirm}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Tenacity Warning Popup ────────────────────────────────────────────────
 function TenacityPopup({ t, lang, setLang, onClose }) {
   return (
@@ -675,7 +915,7 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
         <div style={{...P.noteBox, background:"rgba(202,138,4,0.08)", border:"1px solid #4a3800"}}>
           <span style={P.noteIcon}>🔍</span>
           <span style={{...P.noteText, color:"#fbbf24"}}>
-            Guardians of Cloudia — Damage Calculator v0.7
+            Guardians of Cloudia — Damage Calculator v0.8
           </span>
         </div>
         <div style={{...P.btnRow, justifyContent:"center"}}>
@@ -1020,6 +1260,7 @@ function IsabelPanel({ t }) {
 
 // ── Partners Panel ────────────────────────────────────────────────────────
 function PartnersPanel({ t, flags, tg, isabelOpen, setIsabelOpen, oliviaOpen, setOliviaOpen, onOliviaClick }) {
+  const mob = useContext(MobileCtx);
 
   const partners = [
     {
@@ -1079,7 +1320,7 @@ function PartnersPanel({ t, flags, tg, isabelOpen, setIsabelOpen, oliviaOpen, se
                   <span style={S.partnerDesc}>{p.desc}</span>
                 </div>
                 <span style={{ color: isExpanded ? p.color : "#5a4a2a", fontSize:18 }}>
-                  {isExpanded ? "◀" : "▶"}
+                  {isExpanded ? (mob ? "▲" : "◀") : (mob ? "▼" : "▶")}
                 </span>
               </div>
             </div>
@@ -1165,6 +1406,7 @@ export default function App() {
   const [oliviaPopupSeen,  setOliviaPopupSeen]  = useState(false);
   const [showTenacityPopup, setShowTenacityPopup] = useState(true);
   const [showCredits,       setShowCredits]       = useState(false);
+  const [showChangelog,     setShowChangelog]     = useState(false);
   const [isabelOpen,  setIsabelOpen]  = useState(false);
   const [oliviaOpen,      setOliviaOpen]      = useState(false);
   const [oliviaAccSeen,   setOliviaAccSeen]   = useState(false);
@@ -1276,6 +1518,10 @@ export default function App() {
       {showOliviaAcc && (
         <OliviaAccuracyPopup t={t} onClose={() => { setShowOliviaAcc(false); setOliviaAccSeen(true); setOliviaOpen(true); }} />
       )}
+      {/* CHANGELOG POPUP */}
+      {showChangelog && (
+        <ChangelogPopup t={t} onClose={() => setShowChangelog(false)} />
+      )}
       {/* TENACITY POPUP */}
       {showTenacityPopup && (
         <TenacityPopup t={t} lang={lang} setLang={setLang} onClose={() => setShowTenacityPopup(false)} />
@@ -1303,26 +1549,10 @@ export default function App() {
           <div style={M("hTag")}>{t.tagline}</div>
           <h1 style={M("hTitle")}>{t.title}</h1>
         </div>
-        <div style={{display:"flex", alignItems:"flex-start", gap:10}}>
-          {/* Credits button */}
-          <div style={{position:"relative"}}>
-            <button onClick={()=>setShowCredits(p=>!p)} style={S.creditsBtn}>
-              {lang==="es" ? "ℹ Créditos" : "ℹ Credits"}
-            </button>
-            {showCredits && (
-              <div style={S.creditsDropdown}>
-                <div style={S.creditsDropTitle}>{t.creditsTitle}</div>
-                {t.creditsLines.map((c,i) => (
-                  <div key={i} style={S.creditsDropRow}>
-                    <span style={S.creditsDropLbl}>{c.label}</span>
-                    <span style={S.creditsDropVal}>{c.value}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Lang toggle */}
-          <div style={S.langToggle}>
+        {/* Header right controls — all in one aligned row */}
+        <div style={{marginLeft:"auto", display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6}}>
+          {/* Top row: lang label + buttons */}
+          <div style={{display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", justifyContent:"flex-end"}}>
             <span style={S.langLabel}>{lang==="es" ? "Idioma" : "Language"}</span>
             {["es","en"].map(l=>(
               <button key={l} onClick={()=>setLang(l)}
@@ -1331,15 +1561,37 @@ export default function App() {
               </button>
             ))}
           </div>
+          {/* Bottom row: action buttons */}
+          <div style={{display:"flex", alignItems:"center", gap:5, flexWrap:"wrap", justifyContent:"flex-end"}}>
+            <button onClick={() => setShowChangelog(true)} style={{...M("creditsBtn"), color:"#c08840", borderColor:"#4a3010"}}>
+              {t.changelogBtn}
+            </button>
+            <div style={{position:"relative"}}>
+              <button onClick={()=>setShowCredits(p=>!p)} style={M("creditsBtn")}>
+                {lang==="es" ? "ℹ Créditos" : "ℹ Credits"}
+              </button>
+              {showCredits && (
+                <div style={S.creditsDropdown}>
+                  <div style={S.creditsDropTitle}>{t.creditsTitle}</div>
+                  {t.creditsLines.map((c,i) => (
+                    <div key={i} style={S.creditsDropRow}>
+                      <span style={S.creditsDropLbl}>{c.label}</span>
+                      <span style={S.creditsDropVal}>{c.value}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button onClick={() => setShowTenacityPopup(true)} style={M("tenacityBtn")}>
+              {t.tenacityPopupBtn}
+            </button>
+          </div>
         </div>
         {chargedAtkActive && (
           <div style={S.caHeaderBadge}>
             ⚡ {lang==="es"?"Cargado":"Charged"}: {chargedAtkVal} &nbsp;|&nbsp; {"🔋".repeat(chargedStacks)}
           </div>
         )}
-        <button onClick={() => setShowTenacityPopup(true)} style={M("tenacityBtn")} title={t.tenacityPopupBtn}>
-          {t.tenacityPopupBtn}
-        </button>
         <span style={S.hSword}>⚔</span>
       </header>
 
@@ -1400,17 +1652,29 @@ export default function App() {
 
         {/* PARTNER PANELS — right side */}
         {tab==="pt" && isabelOpen && (
-          <div style={M("isabelRightPanel")}>
+          <div style={{...M("isabelRightPanel"), ...(isMobile ? {borderLeft:"none", borderTop:"1px solid #3a1a5a"} : {})}}>
+            {isMobile && (
+              <button onClick={() => setIsabelOpen(false)}
+                style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#a78bfa", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
+                ◀ {t.mobileShowInputs}
+              </button>
+            )}
             <IsabelPanel t={t} />
           </div>
         )}
         {tab==="pt" && oliviaOpen && (
-          <div style={M("isabelRightPanel")}>
+          <div style={{...M("isabelRightPanel"), ...(isMobile ? {borderLeft:"none", borderTop:"1px solid #3a1a5a"} : {})}}>
+            {isMobile && (
+              <button onClick={() => setOliviaOpen(false)}
+                style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#60a5fa", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
+                ◀ {t.mobileShowInputs}
+              </button>
+            )}
             <OliviaPanel t={t} def={def} stats={oliviaStats} setStats={setOliviaStats} />
           </div>
         )}
         {/* RIGHT */}
-        <div style={{...M("right"), display: (tab==="pt" && (isabelOpen || oliviaOpen)) || (isMobile && mobileView==="inputs") ? "none" : "flex"}}>
+        <div style={{...M("right"), display: (tab==="pt" && (isMobile || isabelOpen || oliviaOpen)) || (isMobile && mobileView==="inputs") ? "none" : "flex"}}>
           {isMobile && (
             <button onClick={() => setMobileView("inputs")}
               style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#f0a060", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
@@ -1527,7 +1791,7 @@ const S = {
   hAccent:{width:4,height:54,borderRadius:2,background:"linear-gradient(180deg,#e05520,#7a1010)",flexShrink:0},
   hTag:{fontSize:12,color:"#8a6030",letterSpacing:"0.15em"},
   hTitle:{margin:"2px 0 0",fontSize:26,fontWeight:900,letterSpacing:"0.12em",color:"#f0e0a0",textShadow:"0 0 28px rgba(220,160,40,0.35)"},
-  langToggle:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5,marginLeft:"auto"},
+  langToggle:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5},
   langLabel:{fontSize:10,color:"#6a5030",letterSpacing:"0.15em",textTransform:"uppercase"},
   langBtn:{padding:"7px 14px",background:"#0d0a06",border:"1px solid #3a2510",color:"#7a6030",cursor:"pointer",borderRadius:2,fontFamily:"inherit",fontSize:13,transition:"all 0.14s"},
   langOn:{background:"rgba(220,84,24,0.22)",borderColor:"#e05520",color:"#f0c060",fontWeight:700},
