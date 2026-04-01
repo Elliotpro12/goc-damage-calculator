@@ -1,4 +1,138 @@
-import React, { useState, useCallback, useRef, useEffect, useContext } from "react";
+import React, { useState, useCallback, useRef, useEffect, useContext, useMemo } from "react";
+
+/*
+ * ══════════════════════════════════════════════════════════════════
+ * DRAFT CHANGELOG — v2.0 (✅ PUBLICADO — Abril 2026)
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * [SESSION 2 — Fixes aplicados]
+ *
+ * LIMPIEZA DE TRADUCCIONES (T.es)
+ *   · Eliminadas ~40 keys EN duplicadas en T.es que se sobreescribían
+ *     (skillBurnBoat, skillTruthShield, buffsTitle, classes, etc.)
+ *   · Corregido bug: skillDeityMarkClass mostraba "Oracle" en lugar de "Oráculo"
+ *   · skillAngelicShieldClass y skillAngelicShieldActive corregidos a ES
+ *
+ * BOTÓN CALCULAR EN MÓVIL (go)
+ *   · go() era un stub vacío () => {} — ahora navega a vista de resultados
+ *   · Añadido resultsRef para hacer scroll suave al top de resultados tras calcular
+ *   · Botón CALCULAR DAÑO en móvil ya funcional
+ *
+ * BADGE DE BUFFS ACTIVOS EN PESTAÑA
+ *   · totalActiveBuffs calculado en App (buffs manuales + skills activas)
+ *   · Pestaña ✦ BUFFS muestra contador: "✦ BUFFS (N)" cuando N > 0
+ *   · Badge desaparece cuando no hay buffs activos
+ *
+ * COMPARTIR BUILD (URL-based)
+ *   · Botón 📤 Compartir / Share en el header junto a Changelog y Créditos
+ *   · Serializa todo el estado (atk, def, heavy, cargado, stacks, flags,
+ *     buffs, olivia, skills activas, idioma) a base64 en el hash de la URL
+ *   · Al copiar muestra feedback visual "✓ Copiado" / "✓ Copied" por 2.2s
+ *   · Fallback a window.prompt si el clipboard no está disponible
+ *   · Al cargar la app detecta #build= en el hash y restaura todo el estado
+ *   · Hash limpiado de la URL tras la carga (history.replaceState)
+ *   · Strings bilingues: shareBtn / shareCopied en T.es y T.en
+ *
+ * BUG FIX — PANEL OLIVIA
+ *   · skill_flat_bonus no tenía label en oliviaLabels (ES ni EN) — campo aparecía vacío
+ *   · Añadido: "Bonus Plano de Skill" (ES) / "Skill Flat Bonus" (EN) — es la parte fija de la skill (ej: ATK×1500% + 1300)
+ *
+ * BOTÓN CALCULAR DAÑO
+ *   · Eliminado en PC — el cálculo en tiempo real hace el botón innecesario
+ *   · En móvil se mantiene pero renombrado a "VER RESULTADOS ▼" / "SEE RESULTS ▼"
+ *     para reflejar que es navegación, no cálculo
+ *
+ * HABILIDADES CONOCIDAS — PISTOLERO
+ *   · Dron de la Paz / Drone of Peace — toggle ON/OFF, +5% bonoDano mientras activo
+ *   · Torreta Cargadora / Charger Turret — toggle ON/OFF, +30% bonoDano ([Adrenalina])
+ *   · Punto naranja ● añadido a Pistolero en el acordeón
+ *   · Ambas habilidades incluidas en el contador de buffs activos y en el build share
+ *
+ * BUFFS DE ALIADOS EN OLIVIA (Fase 1)
+ *   · Sección "BUFFS DE ALIADOS" en el panel de Olivia
+ *   · Muestra solo las skills que pueden afectar aliados y están activas en BUFFS
+ *   · Marca de Deidad — selector de stacks independiente (0 al máximo activo en BUFFS)
+ *   · Dron de la Paz — toggle ON/OFF independiente, +5% bonoDano
+ *   · Torreta Cargadora — toggle ON/OFF independiente, +30% bonoDano
+ *   · Escudo Angelical — toggle ON/OFF, muestra daño ×0.50 en resultados de Olivia
+ *   · Si ninguna skill de aliado está activa, sección muestra mensaje informativo
+ *   · buffedOliviaStats calculado con useMemo, independiente del personaje principal
+ *   · Estado incluido en build share (serialize + deserialize)
+ *
+ * TAB BAR EN MÓVIL
+ *   · Las 6 pestañas se dividenen 2 filas de 3 en móvil (ATK/DEF/HEAVY arriba, CARGADO/BUFFS/PARTNERS abajo)
+ *   · En PC se mantiene la fila única horizontal sin cambios
+ *
+ * PESTAÑA BUFFS / DEBUFFS
+ * - Nueva pestaña ✦ BUFFS entre ATK Cargado y Partners
+ * - Formulario para agregar buffs/debuffs manuales con nombre opcional
+ * - Stats disponibles: ATK (plano), Bono Daño (%), Mult. Crítico (%), Red. Daño (%), Red. Crítico (%)
+ * - Tipo forzado a % para stats que solo pueden ser porcentaje
+ * - Panel derecho muestra buffs activos agrupados por stat con valor base, cambios y valor final
+ * - Buffs y debuffs separados en secciones distintas (⬆/⬇)
+ * - Botón ↺ Limpiar todo
+ * - Botón CALCULAR CON BUFFS → redirige a pestaña ATK con resultados
+ * - Buffs persistidos en localStorage
+ *
+ * HABILIDADES CONOCIDAS (pestaña BUFFS)
+ * - Acordeón de 9 clases: Espadachín, Asesino, Arquero, Pistolero, Martillo,
+ *   Mago, Oráculo, Combatiente, Segador
+ * - Punto naranja ● indica clases con habilidades disponibles
+ * - ORÁCULO:
+ *   · Marca de Deidad — selector stacks 0-5, +2.5% bonoDano por stack, aplicado automáticamente
+ *   · Escudo Angelical — toggle ON/OFF, ×0.50 al daño final (multiplicador separado, inmune a reducciones)
+ * - MARTILLO:
+ *   · Quemar las Naves — toggle ON/OFF, selector de nivel (Base/Base+/Avanzado/Avanzado+)
+ *   · Bono de daño: +3% / +8% / +13% / +13% según nivel, aplicado automáticamente
+ *   · Calculadora de escudo: HP máximo + barra deslizable HP actual (1%-99%)
+ *   · Fórmula: escudo = (hpPerdido × 20% + 994), clamp(shieldMin, shieldMax)
+ *   · Escudo mínimo = HP actual × 10% (HP sacrificado)
+ *   · Escudo máximo = ATK × 360% (base) / ATK × 630% (avanzado)
+ *   · Indicador ⚠ CAP cuando toca el tope de ATK
+ *   · Escudo de Impulso: inmune a reducciones (PvP, maldición, etc.)
+ *   · Avanzado/Avanzado+ marcados como exclusivos de subclase Conquistador
+ * - COMBATIENTE:
+ *   · Escudo de Verdad — toggle ON/OFF, selector nivel (Base/Base+/Avanzado/Avanzado+)
+ *   · Fórmula: escudo = ATK×366% + HP_max×10% (base) / ATK×475.8% + HP_max×13% (avanzado)
+ *   · Avanzado requiere subclase Maestro Qi
+ *   · Base+/Avanzado/Avanzado+: +5% bonoDano mientras activo
+ *   · Toggle PvP: escudo × 0.50
+ * - Panel derecho muestra resumen de habilidades activas con escudo en azul
+ *
+ * CÁLCULO EN TIEMPO REAL
+ * - Calculadora principal y Olivia calculan con useMemo — sin necesidad de presionar botón
+ * - Botón CALCULAR solo queda en móvil (para navegar a resultados)
+ *
+ * OPTIMIZACIONES DE CÓDIGO
+ * - PCT_STATS_BUFF eliminado, unificado con PCT_FIELDS
+ * - calcHeavy() extraído como función compartida entre calcDamage y calcOliviaDamage
+ * - allLabels spread eliminado, uso directo de t.labels
+ * - buffedAtk y buffedDef con useMemo y dependencias correctas
+ *
+ * FÓRMULA
+ * - Clamps corregidos: dano_critico, debuff_mod, class_mod no pueden ser negativos
+ * - Popup de precisión actualizado: ~80%, menciona stats en tiempo real
+ * - Debuff desactivado por defecto en calculadora principal y Olivia
+ * - Isabel PvP formula corregida — healing bonus aplicado directamente sin escalar
+ * - Olivia: campo Bonus plano de skill (flat, después de reducción artefacto, antes de crit/debuff)
+ *
+ * RESULTADOS / GRÁFICA
+ * - Daño base siempre visible, independiente de crit/debuff
+ * - Labels de heavy dinámicos según toggles activos
+ * - Gráfica reestructurada: 4 barras base + sección DEBUFF DMG separada
+ * - Nuevas barras: Sin crít. + Heavy, Base + Debuff, Base + Debuff + Heavy
+ * - Escudo Angelical muestra daño reducido ×0.50 en resultados
+ *
+ * BUG FIXES
+ * - Línea blanca en pestañas corregida (borderBottom recalculado en cada render)
+ * - Idioma EN: todas las keys de buffs/skills/clases añadidas al objeto EN
+ * - burnBoatLevel prop chain corregida (no definido en BuffsPanel)
+ * - useMemo importado en React imports
+ * - res useState duplicado eliminado
+ *
+ * ══════════════════════════════════════════════════════════════════
+ */
+
 
 const MobileCtx = React.createContext(false);
 
@@ -15,13 +149,75 @@ function useIsMobile() {
 const T = {
   es: {
     tagline: "// GUARDIANS OF CLOUDIA — SIMULACIÓN TÁCTICA",
-    title: "CALCULADORA DE DAÑO  v1.1",
-    tabAtk: "⚔ ATACANTE", tabDef: "🛡 DEFENSOR", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 ATK CARGADO",
+    title: "CALCULADORA DE DAÑO  v2.0",
+    tabAtk: "⚔ ATK", tabDef: "🛡 DEF", tabCh: "⚡ HEAVY", tabCA: "🔋 CARGADO",
     conditions: "CONDICIONES DEL GOLPE",
     flagCrit: "💥 Crítico", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
     flagMagic: "✦ Mágico", flagPhys: "🗡 Físico", flagPartner: "🤝 Olivia", flagClass: "🎯 vs Clase",
     flagCharged: "🔋 Atk Cargado",
     tabPartners: "👥 PARTNERS",
+
+    skillBurnBoat: "Último Recurso",
+    skillBurnBoatDesc: "Sacrifica 10% del HP actual → genera un escudo (Último Recurso). Mientras activo: Bono de Daño.",
+    skillBurnBoatLevel: "Nivel de habilidad",
+    skillBurnBoatLvBase: "Base (+3%)", skillBurnBoatLvPlus: "Base+ (+8%)", skillBurnBoatLvAdv: "Avanzado (+13%)", skillBurnBoatLvAdvPlus: "Avanzado+ (+13%)",
+    skillBurnBoatHp: "HP máximo",
+    skillBurnBoatHpPct: "HP actual %",
+    skillBurnBoatHpLost: "HP perdido",
+    skillBurnBoatShield: "Escudo estimado",
+    skillBurnBoatShieldMax: "Escudo máx (ATK×360%)",
+    skillBurnBoatShieldFinal: "Escudo final",
+    skillBurnBoatShieldAdv: "Escudo máx avanzado (ATK×630%)",
+    skillBurnBoatDmgBonus: "Bono de Daño aplicado",
+    skillBurnBoatSubclassNote: "⚠ Avanzado y Avanzado+ requieren subclase Conquistador",
+    skillDroneOfPeace: "Dron de la Paz",
+    skillDroneOfPeaceDesc: "Sigue a todos los aliados durante 10s otorgando +5% Bono de Daño. Solo un dron por aliado.",
+    skillDroneOfPeaceClass: "Pistolero / Comandante",
+    skillChargerTurret: "Torreta Cargadora",
+    skillChargerTurretDesc: "Los aliados curados por la Torrета Cargadora reciben [Adrenalina]: +30% Bono de Daño temporalmente.",
+    skillChargerTurretClass: "Pistolero / Comandante",
+    skillTruthShield: "Escudo de Mantra",
+    skillTruthShieldDesc: "Genera un escudo: ATK×366% + HP_max×10%. Mientras activo: +5% Bono de Daño.",
+    skillTruthShieldLevel: "Nivel de habilidad",
+    skillTruthShieldLvBase: "Base", skillTruthShieldLvPlus: "Base+ (+5% DMG)", skillTruthShieldLvAdv: "Avanzado (Maestro Qi)", skillTruthShieldLvAdvPlus: "Avanzado+ (Maestro Qi)",
+    skillTruthShieldHp: "HP máximo",
+    skillTruthShieldShield: "Escudo estimado",
+    skillTruthShieldShieldFinal: "Escudo final",
+    skillTruthShieldShieldPvP: "Escudo final PvP (×0.50)",
+    skillTruthShieldDmgBonus: "Bono de Daño aplicado",
+    skillTruthShieldPvP: "PvP (×0.50)",
+    skillTruthShieldSubclassNote: "⚠ Avanzado requiere subclase Maestro Qi",
+
+    tabBuffs: "✦ BUFFS",
+    buffsTitle: "BUFFS / DEBUFFS TEMPORALES",
+    buffsAddBtn: "+ Agregar",
+    buffsTabAdd: "➕ Agregar",
+    buffsTabActive: "✦ Activos",
+    skillsTitle: "HABILIDADES CONOCIDAS",
+    skillsComingSoon: "Próximamente",
+    classes: {
+      swordsman: "Espadachín", rogue: "Asesino", bow: "Arquero", gunner: "Pistolero", ironbreaker: "Martillo",
+      mage: "Mago", oracle: "Oráculo", combatant: "Combatiente", reaper: "Segador",
+    },
+    skillAngelicShield: "Escudo Angelical",
+    skillAngelicShieldDesc: "Reduce todo el daño recibido un 50% (PvP). Se aplica como multiplicador final.",
+    skillDeityMark: "Marca de Deidad",
+    skillDeityMarkDesc: "+2.5% Bono de Daño por stack (máx 5 stacks).",
+    skillDeityMarkStacks: "Stacks",
+    skillAngelicShieldActive: "⚔ Escudo Angelical activo — daño final ×0.50",
+    skillAngelicShieldClass: "Oráculo / Sabio Blanco",
+    skillDeityMarkClass: "Oráculo",
+    buffsName: "Nombre (opcional)",
+    buffsEmpty: "Sin buffs activos",
+    buffsTarget: "Objetivo", buffsTargetAtk: "Atacante", buffsTargetDef: "Defensor",
+    buffsStat: "Stat", buffsValue: "Valor",
+    buffsTypeFlat: "Plano", buffsTypePct: "Porcentaje (%)",
+    buffsActiveTitle: "ACTIVOS",
+    buffsListBuffs: "⬆ BUFFS",
+    buffsListDebuffs: "⬇ DEBUFFS",
+    buffsResetBtn: "↺ Limpiar todo",
+    buffsCalcBtn: "CALCULAR DAÑO CON BUFFS",
+    buffsViewList: "◀ Ver buffs",
     claseLabel: "Clase activa:", claseMagic: "Mágica", claseFisica: "Física",
     modoOlivia: "— Modo Olivia",
     partnerOlivia: "❄️ Olivia", partnerIsabel: "🌿 Isabel",
@@ -71,9 +267,12 @@ const T = {
     partnerMina: "🛡 Mina",
     partnerMinaDesc: "Funcionalidad próximamente.",
     oliviaFlatBonus: "Bonus plano de skill",
+    oliviaAllyBuffs: "BUFFS DE ALIADOS",
+    oliviaAllyBuffsNone: "No hay skills de aliados activas en la pestaña BUFFS",
     oliviaPreRed: "Pre-reducción artefacto",
     oliviaArtRed: "Red. artefacto Olivia (−25%)",
     oliviaLabels: {
+      skill_flat_bonus:"Bonus Plano de Skill",
       ataque:"Ataque Base", penetracion:"Penetración", escaladohabilidad:"Escalado Habilidad",
       bonoDano:"Bono de Daño", bonoDanoFisico:"Bono Daño Físico", bonoDanoMagico:"Bono Daño Mágico",
       danoCritico:"Mult. Crítico", debuffDmg:"Daño por Debuff", trueDmg:"True Damage",
@@ -81,6 +280,28 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v2.0", date:"Abril 2026", label:"Gran Actualización",
+        changes:[
+          "Pestaña ✦ BUFFS — buffs/debuffs manuales con nombre, agrupados por stat con valor base y final",
+          "Habilidades conocidas: acordeón de 9 clases con Oráculo, Martillo, Combatiente y Pistolero implementados",
+          "Oráculo: Marca de Deidad (+2.5% bonoDano por stack) y Escudo Angelical (×0.50 daño final)",
+          "Martillo: Último Recurso con calculadora de escudo, niveles Base/Base+/Avanzado/Avanzado+",
+          "Combatiente: Escudo de Mantra con calculadora de escudo y toggle PvP",
+          "Pistolero: Dron de la Paz (+5% bonoDano) y Torreta Cargadora (+30% bonoDano / Adrenalina)",
+          "Badge en pestaña BUFFS mostrando total de buffs y skills activos",
+          "Cálculo en tiempo real con useMemo — botón CALCULAR eliminado en PC",
+          "Botón VER RESULTADOS ▼ en móvil sustituye al botón CALCULAR",
+          "Botón 📤 Compartir — genera URL con build completo en base64 para compartir",
+          "Al abrir la URL el estado se restaura automáticamente",
+          "Buffs de aliados en Olivia — sección independiente con Marca de Deidad, Dron, Torreta y Escudo Angelical",
+          "Escudo Angelical muestra daño ×0.50 en resultados de Olivia",
+          "Corrección: skill_flat_bonus de Olivia mostraba campo sin etiqueta",
+          "Corrección: skillDeityMarkClass mostraba 'Oracle' en lugar de 'Oráculo' en ES",
+          "Corrección: ~40 keys EN duplicadas eliminadas de T.es",
+          "Corrección interna: buffedAtk y buffedDef con useMemo y dependencias correctas",
+          "Tab bar en móvil dividido en 2 filas de 3 — ATK/DEF/HEAVY arriba, CARGADO/BUFFS/PARTNERS abajo",
+        ]
+      },
       { version:"v1.1", date:"Marzo 2026", label:"Versión Completa",
         changes:[
           "Daño base sin crítico añadido al display de resultados (panel principal y Olivia)",
@@ -218,7 +439,7 @@ const T = {
       { label: "Fórmulas y mecánicas", value: "xDarKz" },
       { label: "Desarrollo UI / React", value: "Claude (Anthropic)" },
       { label: "Juego", value: "Guardians of Cloudia" },
-      { label: "Versión", value: "v1.1" },
+      { label: "Versión", value: "v2.0" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Bonus plano de skill",
@@ -238,11 +459,13 @@ const T = {
     defTabPopupBody: "Aquí van las <strong>stats defensivas de tu enemigo</strong>. Ingresa los valores del oponente: defensa, reducción de penetración, reducciones de daño, etc.",
     defTabPopupBtn: "ENTENDIDO",
     resetBtn: "↺ Reset",
+    shareBtn: "📤 Compartir",
+    shareCopied: "✓ Copiado",
     negModWarning: "⚠ Los modificadores netos están reduciendo tu daño",
     calcBtn: "CALCULAR DAÑO",
     mobileShowResults: "VER RESULTADOS ▼",
     mobileShowInputs: "◀ VOLVER",
-    emptyHint: "Configura los parámetros\ny pulsa CALCULAR DAÑO",
+    emptyHint: "Configura los parámetros\npara ver los resultados",
     secBase: "CADENA DE CÁLCULO BASE",
     secMods: "MODIFICADORES NETOS",
     secChargedMods: "MODIFICADORES DE ATK CARGADO",
@@ -309,13 +532,71 @@ const T = {
   },
   en: {
     tagline: "// GUARDIANS OF CLOUDIA — TACTICAL SIMULATION",
-    title: "DAMAGE CALCULATOR  v1.1",
-    tabAtk: "⚔ ATTACKER", tabDef: "🛡 DEFENDER", tabCh: "⚡ HEAVY ATK", tabCA: "🔋 CHARGED ATK",
+    title: "DAMAGE CALCULATOR  v2.0",
+    tabAtk: "⚔ ATK", tabDef: "🛡 DEF", tabCh: "⚡ HEAVY", tabCA: "🔋 CHARGED",
     conditions: "HIT CONDITIONS",
     flagCrit: "💥 Critical", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
     flagMagic: "✦ Magic", flagPhys: "🗡 Physical", flagPartner: "🤝 Olivia", flagClass: "🎯 vs Class",
     flagCharged: "🔋 Charged Atk",
     tabPartners: "👥 PARTNERS",
+    tabBuffs: "✦ BUFFS",
+    buffsTitle: "TEMPORARY BUFFS / DEBUFFS",
+    buffsAddBtn: "+ Add",
+    buffsName: "Name (optional)",
+    buffsTarget: "Target", buffsTargetAtk: "Attacker", buffsTargetDef: "Defender",
+    buffsStat: "Stat", buffsValue: "Value",
+    buffsTypeFlat: "Flat", buffsTypePct: "Percentage (%)",
+    buffsActiveTitle: "ACTIVE",
+    buffsResetBtn: "↺ Clear all",
+    buffsEmpty: "No active buffs",
+    buffsCalcBtn: "CALCULATE DAMAGE WITH BUFFS",
+    buffsViewList: "◀ View buffs",
+    buffsListBuffs: "⬆ BUFFS",
+    buffsListDebuffs: "⬇ DEBUFFS",
+    skillsTitle: "KNOWN SKILLS",
+    skillsComingSoon: "Coming soon",
+    classes: {
+      swordsman: "Swordsman", rogue: "Rogue", bow: "Bow", gunner: "Gunner", ironbreaker: "Ironbreaker",
+      mage: "Mage", oracle: "Oracle", combatant: "Combatant", reaper: "Reaper",
+    },
+    skillAngelicShield: "Angelic Shield",
+    skillAngelicShieldDesc: "Reduces all incoming damage by 50% (PvP). Applied as final multiplier.",
+    skillAngelicShieldActive: "⚔ Angelic Shield active — final dmg ×0.50",
+    skillAngelicShieldClass: "Oracle / White Sage",
+    skillDeityMark: "Deity Mark",
+    skillDeityMarkDesc: "+2.5% DMG Bonus per stack (max 5 stacks).",
+    skillDeityMarkStacks: "Stacks",
+    skillDeityMarkClass: "Oracle",
+    skillBurnBoat: "Last Resort",
+    skillBurnBoatDesc: "Sacrifices 10% current HP → generates a shield (Last Resort). While active: DMG Bonus.",
+    skillBurnBoatLevel: "Skill level",
+    skillBurnBoatLvBase: "Base (+3%)", skillBurnBoatLvPlus: "Base+ (+8%)", skillBurnBoatLvAdv: "Advanced (+13%)", skillBurnBoatLvAdvPlus: "Advanced+ (+13%)",
+    skillBurnBoatHp: "Max HP",
+    skillBurnBoatHpPct: "Current HP %",
+    skillBurnBoatHpLost: "HP lost",
+    skillBurnBoatShield: "Estimated shield",
+    skillBurnBoatShieldMax: "Shield max (ATK×360%)",
+    skillBurnBoatShieldFinal: "Final shield",
+    skillBurnBoatShieldAdv: "Advanced shield max (ATK×630%)",
+    skillBurnBoatDmgBonus: "DMG Bonus applied",
+    skillBurnBoatSubclassNote: "⚠ Advanced and Advanced+ require Conqueror subclass",
+    skillDroneOfPeace: "Drone of Peace",
+    skillDroneOfPeaceDesc: "Follows all allies for 10s granting +5% DMG Bonus. Only one drone per ally.",
+    skillDroneOfPeaceClass: "Gunner / Commander",
+    skillChargerTurret: "Charger Turret",
+    skillChargerTurretDesc: "Allies healed by Charger Turret receive [Adrenaline]: +30% DMG Bonus temporarily.",
+    skillChargerTurretClass: "Gunner / Commander",
+    skillTruthShield: "Mantra Shield",
+    skillTruthShieldDesc: "Generates a shield: ATK×366% + HP_max×10%. While active: +5% DMG Bonus.",
+    skillTruthShieldLevel: "Skill level",
+    skillTruthShieldLvBase: "Base", skillTruthShieldLvPlus: "Base+ (+5% DMG)", skillTruthShieldLvAdv: "Advanced (Qi Master)", skillTruthShieldLvAdvPlus: "Advanced+ (Qi Master)",
+    skillTruthShieldHp: "Max HP",
+    skillTruthShieldShield: "Estimated shield",
+    skillTruthShieldShieldFinal: "Final shield",
+    skillTruthShieldShieldPvP: "Final shield (PvP ×0.50)",
+    skillTruthShieldDmgBonus: "DMG Bonus applied",
+    skillTruthShieldPvP: "PvP (×0.50)",
+    skillTruthShieldSubclassNote: "⚠ Advanced requires Qi Master subclass",
     claseLabel: "Active class:", claseMagic: "Magic", claseFisica: "Physical",
     modoOlivia: "— Olivia Mode",
     partnerOlivia: "❄️ Olivia", partnerIsabel: "🌿 Isabel",
@@ -365,9 +646,12 @@ const T = {
     partnerMina: "🛡 Mina",
     partnerMinaDesc: "Functionality coming soon.",
     oliviaFlatBonus: "Skill flat bonus",
+    oliviaAllyBuffs: "ALLY BUFFS",
+    oliviaAllyBuffsNone: "No ally skills active in the BUFFS tab",
     oliviaPreRed: "Pre-artifact reduction",
     oliviaArtRed: "Olivia artifact red. (−25%)",
     oliviaLabels: {
+      skill_flat_bonus:"Skill Flat Bonus",
       ataque:"Base Attack", penetracion:"Penetration", escaladohabilidad:"Skill Scaling",
       bonoDano:"Damage Bonus", bonoDanoFisico:"Physical DMG Bonus", bonoDanoMagico:"Magic DMG Bonus",
       danoCritico:"Crit Multiplier", debuffDmg:"Debuff Damage", trueDmg:"True Damage",
@@ -375,6 +659,28 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v2.0", date:"April 2026", label:"Major Update",
+        changes:[
+          "✦ BUFFS tab — manual buffs/debuffs with optional name, grouped by stat with base and final values",
+          "Known skills accordion for 9 classes — Oracle, Ironbreaker, Combatant and Gunner implemented",
+          "Oracle: Deity Mark (+2.5% DMG Bonus per stack) and Angelic Shield (×0.50 final dmg)",
+          "Ironbreaker: Last Resort with shield calculator, Base/Base+/Advanced/Advanced+ levels",
+          "Combatant: Mantra Shield with shield calculator and PvP toggle",
+          "Gunner: Drone of Peace (+5% DMG Bonus) and Charger Turret (+30% DMG Bonus / Adrenaline)",
+          "Badge on BUFFS tab showing total active buffs and skills",
+          "Real-time calculation with useMemo — CALCULATE button removed on PC",
+          "SEE RESULTS ▼ button on mobile replaces CALCULATE button",
+          "📤 Share button — generates URL with full build encoded in base64",
+          "Opening the URL automatically restores the full state",
+          "Ally buffs for Olivia — independent section with Deity Mark, Drone, Charger Turret and Angelic Shield",
+          "Angelic Shield shows ×0.50 damage in Olivia results",
+          "Fix: Olivia skill_flat_bonus field had no label",
+          "Fix: skillDeityMarkClass showed 'Oracle' instead of 'Oráculo' in ES",
+          "Fix: ~40 duplicate EN keys removed from T.es",
+          "Internal fix: buffedAtk and buffedDef with useMemo and correct dependencies",
+          "Mobile tab bar split into 2 rows of 3 — ATK/DEF/HEAVY on top, CHARGED/BUFFS/PARTNERS below",
+        ]
+      },
       { version:"v1.1", date:"March 2026", label:"Full Release",
         changes:[
           "Base damage without crit added to results display (main panel and Olivia)",
@@ -512,7 +818,7 @@ const T = {
       { label: "Formulas & mechanics", value: "xDarKz" },
       { label: "UI / React development", value: "Claude (Anthropic)" },
       { label: "Game", value: "Guardians of Cloudia" },
-      { label: "Version", value: "v1.1" },
+      { label: "Version", value: "v2.0" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Skill flat bonus",
@@ -532,6 +838,8 @@ const T = {
     defTabPopupBody: "This is where your <strong>enemy's defensive stats</strong> go. Enter the opponent's values: defense, penetration reduction, damage reductions, etc.",
     defTabPopupBtn: "GOT IT",
     resetBtn: "↺ Reset",
+    shareBtn: "📤 Share",
+    shareCopied: "✓ Copied",
     negModWarning: "⚠ Net modifiers are reducing your damage",
     calcBtn: "CALCULATE DAMAGE",
     mobileShowResults: "SEE RESULTS ▼",
@@ -642,6 +950,11 @@ function calcChargedStats(val, stacks) {
   };
 }
 
+function calcHeavy(danofinal_base, danofinal_with_debuff) {
+  const heavy_raw = Math.abs(danofinal_base - danofinal_base * 1.30);
+  return heavy_raw + danofinal_with_debuff;
+}
+
 function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive, chargedStacks }) {
   const { isCrit, isDebuff, isPvP, isMagic, isPartner, isClass } = flags;
   const ca = chargedAtkActive
@@ -672,9 +985,7 @@ function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive,
   const danofinal_nocrit = Math.max(0, danobase * (dmg_bonus + dano_tipo));
   const danofinal_base   = Math.max(0, danobase * multiplicador);
   const danofinal_debuff = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
-  const heavy_raw        = Math.abs(danofinal_base - danofinal_base * 1.30);
-  const total_hd         = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
-  const heavy_calc       = heavy_raw + total_hd;
+  const heavy_calc       = calcHeavy(danofinal_base, isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base);
 
   const prob_no      = 1 - charged.ataque_fuerte_porcentaje;
   const prob_acierto = charged.ataque_fuerte_porcentaje * charged.hit_rate + prob_no * charged.evacion;
@@ -937,9 +1248,645 @@ function ChargedAtkPanel({ t, chargedAtkVal, setChargedAtkVal, chargedAtkActive,
 }
 
 
+// ── Buffs Panel ────────────────────────────────────────────────────────────
+const ATK_STATS = ["ataque","bonoDano","danoCritico"];
+const PCT_ONLY_STATS = new Set(["bonoDano","danoCritico","reduccionDano","reduccionDanoCritico"]);
+const DEF_STATS = ["reduccionDano","reduccionDanoCritico"];
+
+function BuffsPanel({ t, buffs, setBuffs, atk, def, onCalc, angelicShieldActive, setAngelicShieldActive, deityMarkStacks, setDeityMarkStacks, burnBoatLevel, setBurnBoatLevel, burnBoatMaxHp, setBurnBoatMaxHp, burnBoatHpPct, setBurnBoatHpPct, burnBoatActive, setBurnBoatActive, truthShieldActive, setTruthShieldActive, truthShieldLevel, setTruthShieldLevel, truthShieldMaxHp, setTruthShieldMaxHp, truthShieldPvP, setTruthShieldPvP, droneOfPeaceActive, setDroneOfPeaceActive, chargerTurretActive, setChargerTurretActive }) {
+  const isMobile = useContext(MobileCtx);
+  const [mobileBuffsView, setMobileBuffsView] = useState("add");
+  const totalActive = buffs.length + (deityMarkStacks>0?1:0) + (angelicShieldActive?1:0) + (burnBoatActive?1:0) + (truthShieldActive?1:0);
+  const [target, setTarget] = useState("atk");
+  const [stat,   setStat]   = useState("ataque");
+  const [type,   setType]   = useState("flat");
+  const [value,  setValue]  = useState("");
+  const [buffName, setBuffName] = useState("");
+
+  const statOptions = target === "atk" ? ATK_STATS : DEF_STATS;
+  const isPctOnly = PCT_ONLY_STATS.has(stat);
+  useEffect(() => { if (PCT_ONLY_STATS.has(stat)) setType("pct"); }, [stat]);
+
+  const addBuff = () => {
+    if(!value || isNaN(Number(value))) return;
+    setBuffs(p => [...p, { id: Date.now(), target, stat, type, value: Number(value), name: buffName.trim() }]);
+    setValue("");
+    setBuffName("");
+  };
+
+  const removeBuff = (id) => setBuffs(p => p.filter(b => b.id !== id));
+
+  const buffColor = (v) => Number(v) >= 0 ? "#6ee7a0" : "#fca5a5";
+  const buffSign  = (v) => Number(v) >= 0 ? "▲" : "▼";
+
+  return (
+    <div style={{padding:"0"}}>
+      {/* MOBILE SUB-TABS */}
+      {isMobile && (
+        <div style={{display:"flex",borderBottom:"1px solid #1e1408"}}>
+          {[["add",t.buffsTabAdd],["active",t.buffsTabActive+(totalActive>0?` (${totalActive})`:"")] ].map(([k,l])=>(
+            <button key={k} onClick={()=>setMobileBuffsView(k)} style={{
+              flex:1, padding:"10px 4px", background:"transparent", border:"none", outline:"none",
+              cursor:"pointer", fontFamily:"inherit", fontSize:11, letterSpacing:"0.04em",
+              borderBottom: mobileBuffsView===k ? "2px solid #c08840" : "2px solid transparent",
+              color: mobileBuffsView===k ? "#f0c060" : "#6a5030",
+              background: mobileBuffsView===k ? "rgba(200,160,40,0.06)" : "transparent",
+            }}>{l}</button>
+          ))}
+        </div>
+      )}
+
+      {/* ADD VIEW — always on PC, toggle on mobile */}
+      {(!isMobile || mobileBuffsView==="add") && <div style={{padding:"14px 18px"}}>
+      {/* KNOWN SKILLS ACCORDION */}
+      <div style={{fontSize:11,color:"#c08840",letterSpacing:"0.2em",borderLeft:"3px solid #c08840",paddingLeft:9,marginBottom:12}}>{t.skillsTitle}</div>
+      <SkillsAccordion t={t} angelicShieldActive={angelicShieldActive} setAngelicShieldActive={setAngelicShieldActive} deityMarkStacks={deityMarkStacks} setDeityMarkStacks={setDeityMarkStacks} burnBoatLevel={burnBoatLevel} setBurnBoatLevel={setBurnBoatLevel} burnBoatMaxHp={burnBoatMaxHp} setBurnBoatMaxHp={setBurnBoatMaxHp} burnBoatHpPct={burnBoatHpPct} setBurnBoatHpPct={setBurnBoatHpPct} burnBoatActive={burnBoatActive} setBurnBoatActive={setBurnBoatActive} truthShieldActive={truthShieldActive} setTruthShieldActive={setTruthShieldActive} truthShieldLevel={truthShieldLevel} setTruthShieldLevel={setTruthShieldLevel} truthShieldMaxHp={truthShieldMaxHp} setTruthShieldMaxHp={setTruthShieldMaxHp} truthShieldPvP={truthShieldPvP} setTruthShieldPvP={setTruthShieldPvP} droneOfPeaceActive={droneOfPeaceActive} setDroneOfPeaceActive={setDroneOfPeaceActive} chargerTurretActive={chargerTurretActive} setChargerTurretActive={setChargerTurretActive} atk={atk} />
+
+      <div style={{fontSize:11,color:"#c08840",letterSpacing:"0.2em",borderLeft:"3px solid #c08840",paddingLeft:9,marginBottom:16}}>{t.buffsTitle}</div>
+
+      {/* Add form */}
+      <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"12px 14px",marginBottom:16,display:"flex",flexDirection:"column",gap:10}}>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {/* Target */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:1,minWidth:100}}>
+            <span style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em"}}>{t.buffsTarget}</span>
+            <select value={target} onChange={e=>{setTarget(e.target.value);setStat(e.target.value==="atk"?"ataque":"defensa");}}
+              style={{background:"#0d0a06",border:"1px solid #3a2510",color:"#f0c060",fontFamily:"inherit",fontSize:12,padding:"5px 8px",borderRadius:2,outline:"none"}}>
+              <option value="atk">{t.buffsTargetAtk}</option>
+              <option value="def">{t.buffsTargetDef}</option>
+            </select>
+          </div>
+          {/* Stat */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:2,minWidth:140}}>
+            <span style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em"}}>{t.buffsStat}</span>
+            <select value={stat} onChange={e=>setStat(e.target.value)}
+              style={{background:"#0d0a06",border:"1px solid #3a2510",color:"#f0c060",fontFamily:"inherit",fontSize:12,padding:"5px 8px",borderRadius:2,outline:"none"}}>
+              {statOptions.map(s=>(
+                <option key={s} value={s}>{t.labels[s]||s}</option>
+              ))}
+            </select>
+          </div>
+          {/* Type */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:1,minWidth:100}}>
+            <span style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em"}}>Tipo</span>
+            <select value={type} onChange={e=>setType(e.target.value)} disabled={isPctOnly}
+              style={{background:"#0d0a06",border:"1px solid #3a2510",color:isPctOnly?"#6a5030":"#f0c060",fontFamily:"inherit",fontSize:12,padding:"5px 8px",borderRadius:2,outline:"none",cursor:isPctOnly?"not-allowed":"pointer"}}>
+              <option value="flat" disabled={isPctOnly}>{t.buffsTypeFlat}</option>
+              <option value="pct">{t.buffsTypePct}</option>
+            </select>
+          </div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:4}}>
+          <span style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em"}}>{t.buffsName}</span>
+          <input type="text" value={buffName} onChange={e=>setBuffName(e.target.value)}
+            placeholder="ej: Buff de Isabel / debuff torre..."
+            style={{background:"#0d0a06",border:"1px solid #3a2510",color:"#f0c060",fontFamily:"inherit",fontSize:12,padding:"5px 9px",borderRadius:2,outline:"none",width:"100%"}}/>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:1}}>
+            <span style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em"}}>{t.buffsValue} {type==="pct"?"(%)":"(plano)"}</span>
+            <input type="number" value={value} onChange={e=>setValue(e.target.value)}
+              placeholder={type==="pct"?"+10 / -10":"+5000 / -5000"}
+              style={{background:"#0d0a06",border:"1px solid #3a2510",color:"#f0c060",fontFamily:"inherit",fontSize:14,padding:"6px 9px",borderRadius:2,outline:"none",width:"100%"}}/>
+          </div>
+          <button onClick={addBuff}
+            style={{padding:"8px 18px",background:"linear-gradient(135deg,#7a1212,#e05520)",border:"none",borderRadius:2,color:"#fff",fontFamily:"inherit",fontSize:13,fontWeight:700,letterSpacing:"0.1em",cursor:"pointer",flexShrink:0}}>
+            {t.buffsAddBtn}
+          </button>
+        </div>
+      </div>
+
+      <button onClick={onCalc}
+        style={{margin:"12px 0 0",padding:"15px",background:"linear-gradient(135deg,#7a1212,#e05520)",border:"none",borderRadius:2,cursor:"pointer",color:"#fff",fontSize:13,fontWeight:900,letterSpacing:"0.18em",fontFamily:"inherit",width:"100%"}}>
+        {t.buffsCalcBtn}
+      </button>
+
+      </div>}
+
+      {/* ACTIVE VIEW — mobile only */}
+      {isMobile && mobileBuffsView==="active" && (
+        <BuffsActivePanel t={t} buffs={buffs} setBuffs={setBuffs} atk={atk} def={def}
+          deityMarkStacks={deityMarkStacks} angelicShieldActive={angelicShieldActive}
+          burnBoatLevel={burnBoatLevel} burnBoatMaxHp={burnBoatMaxHp} burnBoatHpPct={burnBoatHpPct}
+          buffedAtk={null} burnBoatActive={burnBoatActive}
+          truthShieldActive={truthShieldActive} truthShieldLevel={truthShieldLevel}
+          truthShieldMaxHp={truthShieldMaxHp} truthShieldPvP={truthShieldPvP}
+          droneOfPeaceActive={droneOfPeaceActive} chargerTurretActive={chargerTurretActive} />
+      )}
+
+    </div>
+  );
+}
+
+
+// ── Buffs Active Panel (right side) ───────────────────────────────────────
+function BuffsActivePanel({ t, buffs, setBuffs, atk, def, deityMarkStacks, angelicShieldActive, burnBoatLevel, burnBoatMaxHp, burnBoatHpPct, buffedAtk, burnBoatActive, truthShieldActive, truthShieldLevel, truthShieldMaxHp, truthShieldPvP, droneOfPeaceActive, chargerTurretActive }) {
+  const removeBuff = (id) => setBuffs(p => p.filter(b => b.id !== id));
+
+  // Group buffs by target+stat
+  const grouped = {};
+  buffs.forEach(b => {
+    const key = b.target + ":" + b.stat;
+    if (!grouped[key]) grouped[key] = { target: b.target, stat: b.stat, items: [] };
+    grouped[key].items.push(b);
+  });
+
+  const getBase = (target, stat) => {
+    const src = target === "atk" ? atk : def;
+    return src[stat] ?? 0;
+  };
+
+  const calcFinal = (base, items) => {
+    const sumFlat = items.filter(b=>b.type==="flat").reduce((s,b)=>s+Number(b.value),0);
+    const sumPct  = items.filter(b=>b.type==="pct").reduce((s,b)=>s+Number(b.value)/100,0);
+    return (base + sumFlat) * (1 + sumPct);
+  };
+
+  const isPct = (stat) => PCT_FIELDS.has(stat);
+
+  const fmtVal = (v, pct) => pct
+    ? (v*100).toFixed(2)+"%"
+    : Math.round(v).toLocaleString("es-ES");
+
+  const renderGroup = (key) => {
+    const g = grouped[key];
+    const base = getBase(g.target, g.stat);
+    const final = calcFinal(base, g.items);
+    const hasChange = Math.abs(final - base) > 0.001;
+    const isPositive = final >= base;
+
+    return (
+      <div key={key} style={{marginBottom:12,background:"rgba(255,255,255,0.02)",border:"1px solid #1e1408",borderRadius:3,padding:"10px 12px"}}>
+        {/* Stat header */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <span style={{fontSize:10,padding:"2px 6px",borderRadius:2,
+              background:g.target==="atk"?"rgba(220,84,24,0.15)":"rgba(59,130,246,0.15)",
+              color:g.target==="atk"?"#f0a060":"#60a5fa",letterSpacing:"0.08em"}}>
+              {g.target==="atk"?t.buffsTargetAtk:t.buffsTargetDef}
+            </span>
+            <span style={{fontSize:12,color:"#c0a070",fontWeight:700,letterSpacing:"0.08em"}}>
+              {t.labels[g.stat]||g.stat}
+            </span>
+          </div>
+          <span style={{fontSize:11,color:"#5a4020",fontFamily:"monospace"}}>
+            BASE: {fmtVal(base, isPct(g.stat))}
+          </span>
+        </div>
+        {/* Individual buff lines */}
+        {g.items.map(b => (
+          <div key={b.id} style={{display:"flex",alignItems:"center",gap:6,padding:"3px 0 3px 12px",borderLeft:"2px solid "+(Number(b.value)>=0?"#3a5a30":"#5a2020")}}>
+            <span style={{fontFamily:"monospace",fontSize:12,color:Number(b.value)>=0?"#6ee7a0":"#fca5a5",flexShrink:0}}>
+              {Number(b.value)>=0?"▲":"▼"} {Math.abs(b.value)}{b.type==="pct"?"%":""}
+            </span>
+            {b.name && <span style={{fontSize:11,color:"#fcd34d",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.name}</span>}
+            <button onClick={()=>removeBuff(b.id)}
+              style={{background:"transparent",border:"none",color:"#5a3020",cursor:"pointer",fontSize:14,padding:"0 2px",lineHeight:1,marginLeft:"auto",flexShrink:0}}>
+              ✕
+            </button>
+          </div>
+        ))}
+        {/* Divider + Final */}
+        {hasChange && (
+          <div style={{borderTop:"1px solid #2a1e08",marginTop:8,paddingTop:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em"}}>FINAL</span>
+            <span style={{fontFamily:"monospace",fontSize:14,fontWeight:900,color:isPositive?"#6ee7a0":"#fca5a5"}}>
+              {fmtVal(final, isPct(g.stat))}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div style={{padding:"18px 20px",flex:1,overflowY:"auto"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{fontSize:11,color:"#c08840",letterSpacing:"0.2em",borderLeft:"3px solid #c08840",paddingLeft:9}}>{t.buffsActiveTitle} ({buffs.length})</div>
+        {buffs.length > 0 && (
+          <button onClick={()=>setBuffs([])}
+            style={{background:"transparent",border:"1px solid #3a2510",color:"#a08040",cursor:"pointer",fontFamily:"inherit",fontSize:11,padding:"3px 10px",borderRadius:2}}>
+            {t.buffsResetBtn}
+          </button>
+        )}
+      </div>
+      {/* Active skills summary */}
+      {(deityMarkStacks > 0 || angelicShieldActive || burnBoatActive || truthShieldActive || droneOfPeaceActive || chargerTurretActive) && (
+        <div style={{marginBottom:12,display:"flex",flexDirection:"column",gap:6}}>
+          <div style={{fontSize:10,color:"#c08840",letterSpacing:"0.15em",borderLeft:"3px solid #c08840",paddingLeft:9,marginBottom:4}}>{t.skillsTitle}</div>
+
+          {/* Deity Mark */}
+          {deityMarkStacks > 0 && (
+            <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"7px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:11,color:"#fcd34d"}}>{t.skillDeityMark} ×{deityMarkStacks}</span>
+              <span style={{fontFamily:"monospace",fontSize:12,color:"#6ee7a0",fontWeight:700}}>▲ +{(deityMarkStacks*2.5).toFixed(1)}% bonoDano</span>
+            </div>
+          )}
+
+          {/* Burn the Boats */}
+          {burnBoatActive && (() => {
+            const BURN = {"base":3,"base+":8,"advanced":13,"advanced+":13};
+            const isAdv = burnBoatLevel==="advanced"||burnBoatLevel==="advanced+";
+            const atkVal = atk?.ataque||0;
+            const hpAct = burnBoatMaxHp*(burnBoatHpPct/100);
+            const hpLostAct = burnBoatMaxHp - hpAct;
+            const shieldC = hpLostAct*0.20+994;
+            const shieldMx = atkVal*(isAdv?6.30:3.60);
+            const shield = burnBoatMaxHp>0 ? Math.min(Math.max(shieldC, hpAct*0.10), shieldMx) : null;
+            return (
+              <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"7px 10px",display:"flex",flexDirection:"column",gap:5}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:11,color:"#fcd34d",fontWeight:700}}>{t.skillBurnBoat} ({burnBoatLevel})</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingLeft:8,borderLeft:"2px solid #3a5a30"}}>
+                  <span style={{fontSize:11,color:"#8a7045"}}>bonoDano</span>
+                  <span style={{fontFamily:"monospace",fontSize:12,color:"#6ee7a0",fontWeight:700}}>▲ +{BURN[burnBoatLevel]}%</span>
+                </div>
+                {shield !== null
+                  ? <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingLeft:8,borderLeft:"2px solid #1e3a5a"}}>
+                      <span style={{fontSize:11,color:"#8a7045"}}>{t.skillBurnBoatShieldFinal}</span>
+                      <span style={{fontFamily:"monospace",fontSize:12,color:"#60a5fa",fontWeight:700}}>{Math.round(shield).toLocaleString("es-ES")}</span>
+                    </div>
+                  : <div style={{fontSize:10,color:"#4a3820",fontStyle:"italic",paddingLeft:8}}>{t.skillBurnBoatHp} →</div>
+                }
+              </div>
+            );
+          })()}
+
+          {/* Truth Shield */}
+          {truthShieldActive && (() => {
+            const isAdv = truthShieldLevel==="advanced"||truthShieldLevel==="advanced+";
+            const atkVal = atk?.ataque||0;
+            const shield = Math.round(atkVal*(isAdv?4.758:3.66) + truthShieldMaxHp*(isAdv?0.13:0.10));
+            return (
+              <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"7px 10px",display:"flex",flexDirection:"column",gap:4}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:11,color:"#fcd34d",fontWeight:700}}>{t.skillTruthShield} ({truthShieldLevel})</span>
+                </div>
+                {(truthShieldLevel!=="base") && (
+                  <div style={{display:"flex",justifyContent:"space-between",paddingLeft:8,borderLeft:"2px solid #3a5a30"}}>
+                    <span style={{fontSize:11,color:"#8a7045"}}>bonoDano</span>
+                    <span style={{fontFamily:"monospace",fontSize:12,color:"#6ee7a0",fontWeight:700}}>▲ +5%</span>
+                  </div>
+                )}
+                <div style={{display:"flex",justifyContent:"space-between",paddingLeft:8,borderLeft:"2px solid #1e3a5a"}}>
+                  <span style={{fontSize:11,color:"#8a7045"}}>{t.skillTruthShieldShieldFinal}</span>
+                  <span style={{fontFamily:"monospace",fontSize:12,color:"#60a5fa",fontWeight:700}}>{shield.toLocaleString("es-ES")}</span>
+                </div>
+                {truthShieldPvP && (
+                  <div style={{display:"flex",justifyContent:"space-between",paddingLeft:8,borderLeft:"2px solid #5a1a1a"}}>
+                    <span style={{fontSize:11,color:"#8a7045"}}>PvP</span>
+                    <span style={{fontFamily:"monospace",fontSize:12,color:"#f87171",fontWeight:700}}>{Math.round(shield*0.5).toLocaleString("es-ES")}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Angelic Shield */}
+          {angelicShieldActive && (
+            <div style={{background:"rgba(248,113,113,0.06)",border:"1px solid #7f1d1d",borderRadius:3,padding:"7px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:11,color:"#f87171"}}>{t.skillAngelicShield}</span>
+              <span style={{fontFamily:"monospace",fontSize:12,color:"#f87171",fontWeight:700}}>×0.50 daño final</span>
+            </div>
+          )}
+
+          {/* Drone of Peace */}
+          {droneOfPeaceActive && (
+            <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"7px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:11,color:"#fcd34d"}}>{t.skillDroneOfPeace}</span>
+              <span style={{fontFamily:"monospace",fontSize:12,color:"#6ee7a0",fontWeight:700}}>▲ +5% bonoDano</span>
+            </div>
+          )}
+
+          {/* Charger Turret */}
+          {chargerTurretActive && (
+            <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"7px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:11,color:"#fcd34d"}}>{t.skillChargerTurret}</span>
+              <span style={{fontFamily:"monospace",fontSize:12,color:"#6ee7a0",fontWeight:700}}>▲ +30% bonoDano</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {buffs.length === 0 && !(deityMarkStacks > 0 || angelicShieldActive || burnBoatActive || truthShieldActive) && (
+        <div style={{textAlign:"center",color:"#3a2e18",fontSize:13,padding:"40px 0",fontStyle:"italic"}}>{t.buffsEmpty}</div>
+      )}
+      {Object.keys(grouped).map(renderGroup)}
+    </div>
+  );
+}
+
+
+// ── Skills Accordion ──────────────────────────────────────────────────────
+const CLASS_ORDER = ["swordsman","rogue","bow","gunner","ironbreaker","mage","oracle","combatant","reaper"];
+
+function SkillsAccordion({ t, angelicShieldActive, setAngelicShieldActive, deityMarkStacks, setDeityMarkStacks, burnBoatLevel, setBurnBoatLevel, burnBoatMaxHp, setBurnBoatMaxHp, burnBoatHpPct, setBurnBoatHpPct, burnBoatActive, setBurnBoatActive, truthShieldActive, setTruthShieldActive, truthShieldLevel, setTruthShieldLevel, truthShieldMaxHp, setTruthShieldMaxHp, truthShieldPvP, setTruthShieldPvP, droneOfPeaceActive, setDroneOfPeaceActive, chargerTurretActive, setChargerTurretActive, atk }) {
+  const [openClass, setOpenClass] = useState(null);
+
+  const toggle = (cls) => setOpenClass(p => p === cls ? null : cls);
+
+  const hasSkills = (cls) => cls === "oracle" || cls === "ironbreaker" || cls === "combatant" || cls === "gunner";
+
+  const renderSkills = (cls) => {
+    if (cls === "gunner") {
+      const skillStyle = {background:"rgba(200,160,40,0.04)",border:"1px solid #2a1e08",borderRadius:3,padding:"10px 12px"};
+      const toggleBtn = (active, onClick) => ({
+        padding:"4px 12px", borderRadius:2,
+        border:`1px solid ${active?"#6ee7a0":"#3a2510"}`,
+        background: active?"rgba(110,231,160,0.12)":"transparent",
+        color: active?"#6ee7a0":"#6a5030",
+        cursor:"pointer", fontFamily:"inherit", fontSize:11, fontWeight:700, outline:"none",
+      });
+      return (
+        <div style={{padding:"10px 14px 8px",display:"flex",flexDirection:"column",gap:10}}>
+          {/* Drone of Peace */}
+          <div style={skillStyle}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+              <div style={{fontSize:12,color:"#fcd34d",fontWeight:700}}>{t.skillDroneOfPeace}</div>
+              <button onClick={()=>setDroneOfPeaceActive(p=>!p)} style={toggleBtn(droneOfPeaceActive)}>
+                {droneOfPeaceActive?"✓ ON":"OFF"}
+              </button>
+            </div>
+            <div style={{fontSize:10,color:"#6a5030",marginBottom:6}}>{t.skillDroneOfPeaceDesc}</div>
+            <div style={{fontSize:10,color:"#5a4828",fontStyle:"italic",marginBottom:droneOfPeaceActive?8:0}}>{t.skillDroneOfPeaceClass}</div>
+            {droneOfPeaceActive && (
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6ee7a0",borderTop:"1px solid #2a1e08",paddingTop:6}}>
+                <span>Bono de Daño aplicado</span>
+                <span style={{fontFamily:"monospace",fontWeight:700}}>▲ +5% bonoDano</span>
+              </div>
+            )}
+          </div>
+          {/* Charger Turret */}
+          <div style={skillStyle}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+              <div style={{fontSize:12,color:"#fcd34d",fontWeight:700}}>{t.skillChargerTurret}</div>
+              <button onClick={()=>setChargerTurretActive(p=>!p)} style={toggleBtn(chargerTurretActive)}>
+                {chargerTurretActive?"✓ ON":"OFF"}
+              </button>
+            </div>
+            <div style={{fontSize:10,color:"#6a5030",marginBottom:6}}>{t.skillChargerTurretDesc}</div>
+            <div style={{fontSize:10,color:"#5a4828",fontStyle:"italic",marginBottom:chargerTurretActive?8:0}}>{t.skillChargerTurretClass}</div>
+            {chargerTurretActive && (
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6ee7a0",borderTop:"1px solid #2a1e08",paddingTop:6}}>
+                <span>Bono de Daño aplicado</span>
+                <span style={{fontFamily:"monospace",fontWeight:700}}>▲ +30% bonoDano</span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    if (cls === "ironbreaker") {
+      const BONUS = {base:0.03, "base+":0.08, advanced:0.13, "advanced+":0.13};
+      const isAdv = burnBoatLevel === "advanced" || burnBoatLevel === "advanced+";
+      const atkVal = atk?.ataque || 0;
+      const hpActual = burnBoatMaxHp * (burnBoatHpPct / 100);
+      const hpLost = burnBoatMaxHp - hpActual;
+      const shieldCalc = hpLost * 0.20 + 994;
+      const shieldMin = hpActual * 0.10;
+      const shieldMax = atkVal * (isAdv ? 6.30 : 3.60);
+      const shieldFinal = Math.min(Math.max(shieldCalc, shieldMin), shieldMax);
+      const dmgBonus = BONUS[burnBoatLevel] || 0;
+      const levels = [
+        {key:"base", label:t.skillBurnBoatLvBase},
+        {key:"base+", label:t.skillBurnBoatLvPlus},
+        {key:"advanced", label:t.skillBurnBoatLvAdv},
+        {key:"advanced+", label:t.skillBurnBoatLvAdvPlus},
+      ];
+      return (
+        <div style={{padding:"10px 14px 8px",display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{background:"rgba(200,160,40,0.04)",border:"1px solid #2a1e08",borderRadius:3,padding:"10px 12px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+              <div style={{fontSize:12,color:"#fcd34d",fontWeight:700}}>{t.skillBurnBoat}</div>
+              <button onClick={()=>setBurnBoatActive(p=>!p)}
+                style={{padding:"4px 12px",borderRadius:2,border:"1px solid "+(burnBoatActive?"#6ee7a0":"#3a2510"),background:burnBoatActive?"rgba(110,231,160,0.12)":"transparent",color:burnBoatActive?"#6ee7a0":"#6a5030",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:700,outline:"none"}}>
+                {burnBoatActive?"✓ ON":"OFF"}
+              </button>
+            </div>
+            <div style={{fontSize:10,color:"#6a5030",marginBottom:10}}>{t.skillBurnBoatDesc}</div>
+
+            {/* Level selector */}
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em",marginBottom:6}}>{t.skillBurnBoatLevel}</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                {levels.map(lv=>(
+                  <button key={lv.key} onClick={()=>setBurnBoatLevel(lv.key)}
+                    style={{padding:"4px 8px",borderRadius:2,border:"1px solid "+(burnBoatLevel===lv.key?"#fcd34d":"#3a2510"),background:burnBoatLevel===lv.key?"rgba(252,211,77,0.12)":"transparent",color:burnBoatLevel===lv.key?"#fcd34d":"#6a5030",cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:700,outline:"none"}}>
+                    {lv.label}
+                  </button>
+                ))}
+              </div>
+              {isAdv && <div style={{fontSize:9,color:"#f87171",marginTop:4,fontStyle:"italic"}}>{t.skillBurnBoatSubclassNote}</div>}
+            </div>
+
+            {/* HP inputs */}
+            <div style={{marginBottom:10,display:"flex",flexDirection:"column",gap:8}}>
+              <div>
+                <div style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em",marginBottom:4}}>{t.skillBurnBoatHp}</div>
+                <input type="number" value={burnBoatMaxHp||""} onChange={e=>setBurnBoatMaxHp(parseFloat(e.target.value)||0)}
+                  placeholder="ej: 2500000"
+                  style={{background:"#0d0a06",border:"1px solid #3a2510",color:"#f0c060",fontFamily:"inherit",fontSize:13,padding:"5px 9px",borderRadius:2,outline:"none",width:"100%",boxSizing:"border-box"}}/>
+              </div>
+              <div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#7a6030",letterSpacing:"0.1em",marginBottom:4}}>
+                  <span>{t.skillBurnBoatHpPct}</span>
+                  <span style={{color:"#f0c060",fontFamily:"monospace"}}>{burnBoatHpPct}%</span>
+                </div>
+                <input type="range" min="1" max="99" value={burnBoatHpPct} onChange={e=>setBurnBoatHpPct(Number(e.target.value))}
+                  style={{width:"100%",accentColor:"#e05520",cursor:"pointer"}}/>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:"#4a3820",marginTop:2}}>
+                  <span>1% ← más escudo</span>
+                  <span>menos escudo → 100%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Shield results */}
+            {burnBoatMaxHp > 0 && (
+              <div style={{borderTop:"1px solid #2a1e08",paddingTop:8,display:"flex",flexDirection:"column",gap:4}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#8a7045"}}>
+                  <span>{t.skillBurnBoatHpLost}</span>
+                  <span style={{fontFamily:"monospace",color:"#fca5a5"}}>{Math.round(hpLost).toLocaleString("es-ES")}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#8a7045"}}>
+                  <span>{t.skillBurnBoatShield}</span>
+                  <span style={{fontFamily:"monospace",color:"#94a3b8"}}>{Math.round(shieldCalc).toLocaleString("es-ES")}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#8a7045"}}>
+                  <span>{isAdv ? t.skillBurnBoatShieldAdv : t.skillBurnBoatShieldMax}</span>
+                  <span style={{fontFamily:"monospace",color:"#94a3b8"}}>{Math.round(shieldMax).toLocaleString("es-ES")}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#60a5fa",borderTop:"1px solid #2a1e08",paddingTop:6,marginTop:2}}>
+                  <span style={{fontWeight:700}}>{t.skillBurnBoatShieldFinal}{shieldFinal>=shieldMax&&burnBoatMaxHp>0?" ⚠ CAP":""}</span>
+                  <span style={{fontFamily:"monospace",fontWeight:900}}>{Math.round(shieldFinal).toLocaleString("es-ES")}</span>
+                </div>
+                {shieldFinal>=shieldMax&&burnBoatMaxHp>0&&<div style={{fontSize:9,color:"#fcd34d",fontStyle:"italic"}}>Tope de ATK×{isAdv?"630":"360"}% alcanzado</div>}
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6ee7a0",marginTop:2}}>
+                  <span>{t.skillBurnBoatDmgBonus}</span>
+                  <span style={{fontFamily:"monospace",fontWeight:700}}>▲ +{(dmgBonus*100).toFixed(0)}% bonoDano</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (cls === "combatant") {
+      const isAdv = truthShieldLevel === "advanced" || truthShieldLevel === "advanced+";
+      const hasBonus = truthShieldLevel !== "base";
+      const atkVal = atk?.ataque || 0;
+      const atkMult = isAdv ? 4.758 : 3.66;
+      const hpMult = isAdv ? 0.13 : 0.10;
+      const shieldCalc = atkVal * atkMult + truthShieldMaxHp * hpMult;
+      const shieldPvP = shieldCalc * 0.50;
+      const levels = [
+        {key:"base", label:t.skillTruthShieldLvBase},
+        {key:"base+", label:t.skillTruthShieldLvPlus},
+        {key:"advanced", label:t.skillTruthShieldLvAdv},
+        {key:"advanced+", label:t.skillTruthShieldLvAdvPlus},
+      ];
+      return (
+        <div style={{padding:"10px 14px 8px",display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{background:"rgba(200,160,40,0.04)",border:"1px solid #2a1e08",borderRadius:3,padding:"10px 12px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+              <div style={{fontSize:12,color:"#fcd34d",fontWeight:700}}>{t.skillTruthShield}</div>
+              <button onClick={()=>setTruthShieldActive(p=>!p)}
+                style={{padding:"4px 12px",borderRadius:2,border:"1px solid "+(truthShieldActive?"#6ee7a0":"#3a2510"),background:truthShieldActive?"rgba(110,231,160,0.12)":"transparent",color:truthShieldActive?"#6ee7a0":"#6a5030",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:700,outline:"none"}}>
+                {truthShieldActive?"✓ ON":"OFF"}
+              </button>
+            </div>
+            <div style={{fontSize:10,color:"#6a5030",marginBottom:10}}>{t.skillTruthShieldDesc}</div>
+
+            {/* Level */}
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em",marginBottom:6}}>{t.skillTruthShieldLevel}</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                {levels.map(lv=>(
+                  <button key={lv.key} onClick={()=>setTruthShieldLevel(lv.key)}
+                    style={{padding:"4px 8px",borderRadius:2,border:"1px solid "+(truthShieldLevel===lv.key?"#fcd34d":"#3a2510"),background:truthShieldLevel===lv.key?"rgba(252,211,77,0.12)":"transparent",color:truthShieldLevel===lv.key?"#fcd34d":"#6a5030",cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:700,outline:"none"}}>
+                    {lv.label}
+                  </button>
+                ))}
+              </div>
+              {isAdv && <div style={{fontSize:9,color:"#f87171",marginTop:4,fontStyle:"italic"}}>{t.skillTruthShieldSubclassNote}</div>}
+            </div>
+
+            {/* Max HP input */}
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em",marginBottom:4}}>{t.skillTruthShieldHp}</div>
+              <input type="number" value={truthShieldMaxHp||""} onChange={e=>setTruthShieldMaxHp(parseFloat(e.target.value)||0)}
+                placeholder="ej: 2500000"
+                style={{background:"#0d0a06",border:"1px solid #3a2510",color:"#f0c060",fontFamily:"inherit",fontSize:13,padding:"5px 9px",borderRadius:2,outline:"none",width:"100%",boxSizing:"border-box"}}/>
+            </div>
+
+            {/* Results */}
+            {(truthShieldMaxHp > 0 || atkVal > 0) && (
+              <div style={{borderTop:"1px solid #2a1e08",paddingTop:8,display:"flex",flexDirection:"column",gap:4}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#8a7045"}}>
+                  <span>{t.skillTruthShieldShield}</span>
+                  <span style={{fontFamily:"monospace",color:"#94a3b8"}}>{Math.round(shieldCalc).toLocaleString("es-ES")}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#60a5fa",borderTop:"1px solid #2a1e08",paddingTop:6,marginTop:2}}>
+                  <span style={{fontWeight:700}}>{t.skillTruthShieldShieldFinal}</span>
+                  <span style={{fontFamily:"monospace",fontWeight:900}}>{Math.round(shieldCalc).toLocaleString("es-ES")}</span>
+                </div>
+                {/* PvP toggle */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:4}}>
+                  <span style={{fontSize:10,color:"#7a6030",letterSpacing:"0.1em"}}>{t.skillTruthShieldPvP}</span>
+                  <button onClick={()=>setTruthShieldPvP(p=>!p)}
+                    style={{padding:"3px 10px",borderRadius:2,border:"1px solid "+(truthShieldPvP?"#f87171":"#3a2510"),background:truthShieldPvP?"rgba(248,113,113,0.12)":"transparent",color:truthShieldPvP?"#f87171":"#6a5030",cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:700,outline:"none"}}>
+                    {truthShieldPvP?"✓ ON":"OFF"}
+                  </button>
+                </div>
+                {truthShieldPvP && (
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#f87171",borderTop:"1px solid #2a1e08",paddingTop:6,marginTop:2}}>
+                    <span style={{fontWeight:700}}>{t.skillTruthShieldShieldPvP}</span>
+                    <span style={{fontFamily:"monospace",fontWeight:900}}>{Math.round(shieldPvP).toLocaleString("es-ES")}</span>
+                  </div>
+                )}
+                {hasBonus && truthShieldActive && (
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6ee7a0",marginTop:2}}>
+                    <span>{t.skillTruthShieldDmgBonus}</span>
+                    <span style={{fontFamily:"monospace",fontWeight:700}}>▲ +5% bonoDano</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (cls === "oracle") return (
+      <div style={{padding:"10px 14px 4px",display:"flex",flexDirection:"column",gap:10}}>
+
+        {/* Deity Mark */}
+        <div style={{background:"rgba(200,160,40,0.04)",border:"1px solid #2a1e08",borderRadius:3,padding:"10px 12px"}}>
+          <div style={{fontSize:12,color:"#fcd34d",fontWeight:700,marginBottom:4}}>{t.skillDeityMark}</div>
+          <div style={{fontSize:10,color:"#6a5030",marginBottom:8}}>{t.skillDeityMarkDesc}</div>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <span style={{fontSize:11,color:"#7a6030",letterSpacing:"0.1em"}}>{t.skillDeityMarkStacks}</span>
+            {[0,1,2,3,4,5].map(n=>(
+              <button key={n} onClick={()=>setDeityMarkStacks(n)}
+                style={{width:26,height:26,borderRadius:2,border:"1px solid "+(deityMarkStacks===n?"#fcd34d":"#3a2510"),background:deityMarkStacks===n?"rgba(252,211,77,0.15)":"transparent",color:deityMarkStacks===n?"#fcd34d":"#6a5030",cursor:"pointer",fontFamily:"monospace",fontSize:12,fontWeight:700,outline:"none"}}>
+                {n}
+              </button>
+            ))}
+            {deityMarkStacks>0 && <span style={{fontSize:11,color:"#6ee7a0",fontFamily:"monospace"}}>▲ +{(deityMarkStacks*2.5).toFixed(1)}%</span>}
+          </div>
+        </div>
+
+        {/* Angelic Shield */}
+        <div style={{background:"rgba(200,160,40,0.04)",border:"1px solid #2a1e08",borderRadius:3,padding:"10px 12px",marginBottom:4}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+            <div style={{fontSize:12,color:"#fcd34d",fontWeight:700}}>{t.skillAngelicShield}</div>
+            <button onClick={()=>setAngelicShieldActive(p=>!p)}
+              style={{padding:"4px 12px",borderRadius:2,border:"1px solid "+(angelicShieldActive?"#f87171":"#3a2510"),background:angelicShieldActive?"rgba(248,113,113,0.15)":"transparent",color:angelicShieldActive?"#f87171":"#6a5030",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:700,outline:"none"}}>
+              {angelicShieldActive?"✓ ON":"OFF"}
+            </button>
+          </div>
+          <div style={{fontSize:10,color:"#6a5030"}}>{t.skillAngelicShieldDesc}</div>
+          {angelicShieldActive && <div style={{fontSize:10,color:"#f87171",marginTop:5,fontStyle:"italic"}}>{t.skillAngelicShieldActive}</div>}
+        </div>
+
+      </div>
+    );
+    return (
+      <div style={{padding:"10px 14px",fontSize:11,color:"#3a2e18",fontStyle:"italic"}}>{t.skillsComingSoon}</div>
+    );
+  };
+
+  return (
+    <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:4}}>
+      {CLASS_ORDER.map(cls => (
+        <div key={cls} style={{border:"1px solid "+(openClass===cls?"#3a2e18":"#1e1408"),borderRadius:3,overflow:"hidden"}}>
+          <button onClick={()=>toggle(cls)} style={{
+            width:"100%",display:"flex",justifyContent:"space-between",alignItems:"center",
+            padding:"8px 12px",background:openClass===cls?"rgba(200,160,40,0.06)":"transparent",
+            border:"none",cursor:"pointer",fontFamily:"inherit",outline:"none",
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:12,color:openClass===cls?"#f0c060":"#8a7045",fontWeight:700,letterSpacing:"0.06em"}}>
+                {t.classes[cls]}
+              </span>
+              {hasSkills(cls) && <span style={{fontSize:9,padding:"1px 5px",borderRadius:10,background:"rgba(220,84,24,0.2)",color:"#e05520",letterSpacing:"0.08em"}}>●</span>}
+            </div>
+            <span style={{fontSize:10,color:"#5a4020"}}>{openClass===cls?"▲":"▼"}</span>
+          </button>
+          {openClass===cls && renderSkills(cls)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
 // ── Changelog Popup ───────────────────────────────────────────────────────
 function ChangelogPopup({ t, onClose }) {
   const versionColors = {
+    "v2.0":"#f0c060",
     "v0.9.1":"#86efac", "v0.9":"#fcd34d", "v0.8":"#fb923c", "v0.6":"#a78bfa", "v0.5":"#f87171",
     "v0.4":"#60a5fa", "v0.3":"#34d399", "v0.2":"#fb923c", "v0.1":"#94a3b8",
   };
@@ -1036,7 +1983,7 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
         <div style={{...P.noteBox, background:"rgba(202,138,4,0.08)", border:"1px solid #4a3800"}}>
           <span style={P.noteIcon}>🔍</span>
           <span style={{...P.noteText, color:"#fbbf24"}}>
-            Guardians of Cloudia — Damage Calculator v1.1
+            Guardians of Cloudia — Damage Calculator v2.0
           </span>
         </div>
         <div style={{...P.btnRow, justifyContent:"center"}}>
@@ -1175,20 +2122,34 @@ function calcOliviaDamage({ atk, def, isCrit, isDebuff }) {
   const danofinal_pre    = danobase * multiplicador;
   const danofinal_base   = danofinal_pre * (1 - OLIVIA_ARTIFACT_REDUCTION) + (atk.skill_flat_bonus || 0);
   const danofinal_debuff = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
-  const heavy_raw        = Math.abs(danofinal_base - danofinal_base * 1.30);
-  const total_hd         = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
-  const heavy_calc       = heavy_raw + total_hd;
+  const heavy_calc       = calcHeavy(danofinal_base, isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base);
 
-  return { defensafinal, ataquefinal, danobase, dmg_bonus, dano_magico, dano_critico, debuff_mod, multiplicador, danofinal_nocrit, danofinal_pre, danofinal_base, danofinal_debuff, heavy_calc, OLIVIA_ARTIFACT_REDUCTION };
+  return {
+    defensafinal, ataquefinal, danobase, dmg_bonus, dano_magico, dano_critico, debuff_mod, multiplicador,
+    danofinal_nocrit, danofinal_pre, danofinal_base, danofinal_debuff, heavy_calc, OLIVIA_ARTIFACT_REDUCTION,
+    heavy_nocrit: danofinal_nocrit * 1.30,
+    heavy_base: danofinal_base * 1.30,
+    danofinal_base_debuff: isDebuff ? danofinal_nocrit * (1 + debuff_mod) : danofinal_nocrit,
+    heavy_base_debuff: isDebuff ? danofinal_nocrit * (1 + debuff_mod) * 1.30 : danofinal_nocrit * 1.30,
+  };
 }
 
-function OliviaPanel({ t, def, stats, setStats }) {
+function OliviaPanel({ t, def, stats, setStats, deityMarkStacks, setDeityMarkStacks, angelicShieldActive, setAngelicShieldActive, droneActive, setDroneActive, chargerTurretActive, setChargerTurretActive, globalDeityMarkStacks, globalAngelicShieldActive, globalDroneActive, globalChargerTurretActive }) {
   const [isCrit,   setIsCrit]   = useState(true);
   const [isDebuff, setIsDebuff] = useState(false);
-  const [res,      setRes]      = useState(null);
+  const res = useMemo(() => calcOliviaDamage({ atk: stats, def, isCrit, isDebuff }), [stats, def, isCrit, isDebuff]);
   const us = (f, v) => setStats(p => ({...p, [f]: v}));
 
-  const calc = () => setRes(calcOliviaDamage({ atk: stats, def, isCrit, isDebuff }));
+  const anyGlobalAllyBuff = globalDeityMarkStacks > 0 || globalAngelicShieldActive || globalDroneActive || globalChargerTurretActive;
+
+  const toggleBtn = (active, onClick) => ({
+    padding:"3px 10px", borderRadius:2, cursor:"pointer", fontFamily:"inherit",
+    fontSize:11, fontWeight:700, outline:"none",
+    border:`1px solid ${active?"#6ee7a0":"#3a2510"}`,
+    background: active?"rgba(110,231,160,0.12)":"transparent",
+    color: active?"#6ee7a0":"#6a5030",
+  });
+
 
   return (
     <div style={{ padding:"14px 20px" }}>
@@ -1222,7 +2183,77 @@ function OliviaPanel({ t, def, stats, setStats }) {
         </div>
       </div>
 
-      <button style={{...S.btn, margin:"12px 0"}} onClick={calc}>{t.calcBtn}</button>
+      {/* Ally buffs section */}
+      <div style={{marginTop:14,marginBottom:4}}>
+        <div style={{fontSize:11,color:"#c08840",letterSpacing:"0.15em",borderLeft:"3px solid #c08840",paddingLeft:9,marginBottom:10}}>{t.oliviaAllyBuffs}</div>
+        {!anyGlobalAllyBuff ? (
+          <div style={{fontSize:11,color:"#3a2e18",fontStyle:"italic",padding:"6px 10px"}}>{t.oliviaAllyBuffsNone}</div>
+        ) : (
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+
+            {/* Deity Mark */}
+            {globalDeityMarkStacks > 0 && (
+              <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"8px 10px"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom: deityMarkStacks>0?6:0}}>
+                  <span style={{fontSize:11,color:"#fcd34d",fontWeight:700}}>{t.skillDeityMark}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    {[0,1,2,3,4,5].filter(n=>n<=globalDeityMarkStacks).map(n=>(
+                      <button key={n} onClick={()=>setDeityMarkStacks(n)}
+                        style={{width:22,height:22,borderRadius:2,border:`1px solid ${deityMarkStacks===n?"#fcd34d":"#3a2510"}`,background:deityMarkStacks===n?"rgba(252,211,77,0.15)":"transparent",color:deityMarkStacks===n?"#fcd34d":"#6a5030",cursor:"pointer",fontFamily:"monospace",fontSize:11,fontWeight:700,outline:"none"}}>
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {deityMarkStacks > 0 && (
+                  <div style={{fontSize:11,color:"#6ee7a0",fontFamily:"monospace"}}>▲ +{(deityMarkStacks*2.5).toFixed(1)}% bonoDano</div>
+                )}
+              </div>
+            )}
+
+            {/* Drone of Peace */}
+            {globalDroneActive && (
+              <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"8px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:11,color:"#fcd34d",fontWeight:700,marginBottom:2}}>{t.skillDroneOfPeace}</div>
+                  {droneActive && <div style={{fontSize:11,color:"#6ee7a0",fontFamily:"monospace"}}>▲ +5% bonoDano</div>}
+                </div>
+                <button onClick={()=>setDroneActive(p=>!p)} style={toggleBtn(droneActive)}>
+                  {droneActive?"✓ ON":"OFF"}
+                </button>
+              </div>
+            )}
+
+            {/* Charger Turret */}
+            {globalChargerTurretActive && (
+              <div style={{background:"rgba(200,160,40,0.05)",border:"1px solid #2a1e08",borderRadius:3,padding:"8px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:11,color:"#fcd34d",fontWeight:700,marginBottom:2}}>{t.skillChargerTurret}</div>
+                  {chargerTurretActive && <div style={{fontSize:11,color:"#6ee7a0",fontFamily:"monospace"}}>▲ +30% bonoDano</div>}
+                </div>
+                <button onClick={()=>setChargerTurretActive(p=>!p)} style={toggleBtn(chargerTurretActive)}>
+                  {chargerTurretActive?"✓ ON":"OFF"}
+                </button>
+              </div>
+            )}
+
+            {/* Angelic Shield */}
+            {globalAngelicShieldActive && (
+              <div style={{background:"rgba(248,113,113,0.06)",border:"1px solid #7f1d1d",borderRadius:3,padding:"8px 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:11,color:"#f87171",fontWeight:700,marginBottom:2}}>{t.skillAngelicShield}</div>
+                  {angelicShieldActive && <div style={{fontSize:11,color:"#f87171",fontFamily:"monospace"}}>×0.50 daño final</div>}
+                </div>
+                <button onClick={()=>setAngelicShieldActive(p=>!p)} style={{...toggleBtn(angelicShieldActive), border:`1px solid ${angelicShieldActive?"#f87171":"#3a2510"}`, color:angelicShieldActive?"#f87171":"#6a5030", background:angelicShieldActive?"rgba(248,113,113,0.12)":"transparent"}}>
+                  {angelicShieldActive?"✓ ON":"OFF"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+
 
       {/* Results */}
       {res && (
@@ -1295,6 +2326,61 @@ function OliviaPanel({ t, def, stats, setStats }) {
             <span style={S.isabelResultLbl}>{isDebuff ? t.heavyDebuff : isCrit ? t.heavyNormal : t.heavyOnly}</span>
             <span style={{...S.isabelResultVal,color:"#f87171",fontSize:20,fontWeight:700}}>{Math.round(res.heavy_calc).toLocaleString("es-ES")}</span>
           </div>
+          {angelicShieldActive && (
+            <div style={{marginTop:8,padding:"8px 12px",background:"rgba(248,113,113,0.08)",border:"1px solid #7f1d1d",borderRadius:2}}>
+              <div style={{fontSize:10,color:"#f87171",letterSpacing:"0.15em",marginBottom:6}}>⚔ ANGELIC SHIELD ×0.50</div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#f87171",fontFamily:"monospace"}}>
+                <span>{isDebuff?t.danoConDebuff:t.danoSinDebuff}</span>
+                <span style={{fontWeight:700}}>{Math.round((res.danofinal_debuff||res.danofinal_base)*0.5).toLocaleString("es-ES")}</span>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:15,color:"#f87171",fontFamily:"monospace",marginTop:4}}>
+                <span>{isDebuff?t.heavyDebuff:isCrit?t.heavyNormal:t.heavyOnly}</span>
+                <span style={{fontWeight:900}}>{Math.round(res.heavy_calc*0.5).toLocaleString("es-ES")}</span>
+              </div>
+            </div>
+          )}
+
+          <div style={{...S.isabelResultDivider, marginTop:14}}>{t.secChart}</div>
+          {(() => {
+            const maxVal = isDebuff ? res.heavy_calc : res.heavy_calc;
+            const renderBar = (lbl, val, grad) => {
+              const pct = Math.min(100,(val/(maxVal||1))*100);
+              return (
+                <div key={lbl} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <span style={{width:120,fontSize:11,color:"#8a7045",flexShrink:0,overflow:"visible",whiteSpace:"nowrap"}}>{lbl}</span>
+                  <div style={{flex:1,height:8,background:"#181008",borderRadius:2,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${grad})`,borderRadius:2}}/>
+                  </div>
+                  <span style={{fontSize:11,color:"#a08855",width:85,textAlign:"right",fontFamily:"monospace",flexShrink:0}}>
+                    {Math.round(val).toLocaleString("es-ES")}
+                  </span>
+                </div>
+              );
+            };
+            const baseRows = [
+              [t.danoNoCrit,   res.danofinal_nocrit, "#6a7a60,#4a5a40"],
+              [t.barNormal,    res.danofinal_base,   "#60a5fa,#2563eb"],
+              ...(isCrit ? [[t.barNoCritHeavy, res.heavy_nocrit, "#7a9a60,#4a6a30"]] : []),
+              [t.barCritHeavy, res.heavy_base,       "#f87171,#dc2626"],
+            ];
+            const debuffRows = isDebuff ? [
+              [t.barBaseDebuff,      res.danofinal_base_debuff, "#f59e0b,#d97706"],
+              [t.barBaseDebuffHeavy, res.heavy_base_debuff,     "#fbbf24,#b45309"],
+              [t.barDebuff,          res.danofinal_debuff,      "#fb923c,#ea580c"],
+              [t.barDebuffHeavy,     res.heavy_calc,            "#ef4444,#b91c1c"],
+            ] : [];
+            return (
+              <>
+                {baseRows.map(([l,v,g]) => renderBar(l,v,g))}
+                {isDebuff && (
+                  <>
+                    <div style={{...S.isabelResultDivider, marginTop:10}}>{t.secChartDebuff}</div>
+                    {debuffRows.map(([l,v,g]) => renderBar(l,v,g))}
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -1610,12 +2696,38 @@ export default function App() {
     if (!oliviaAccSeen) { setShowOliviaAcc(true); }
     else { setOliviaOpen(true); }
   };
+  const [angelicShieldActive, setAngelicShieldActive] = useState(false);
+  const [deityMarkStacks, setDeityMarkStacks] = useState(0);
+  const [burnBoatActive, setBurnBoatActive] = useState(false);
+  const [truthShieldActive, setTruthShieldActive] = useState(false);
+  const [truthShieldLevel, setTruthShieldLevel] = useState("base");
+  const [truthShieldMaxHp, setTruthShieldMaxHp] = useState(0);
+  const [truthShieldPvP, setTruthShieldPvP] = useState(false);
+  const [burnBoatLevel, setBurnBoatLevel] = useState("base");
+  const [burnBoatMaxHp, setBurnBoatMaxHp] = useState(0);
+  const [burnBoatHpPct, setBurnBoatHpPct] = useState(100);
+  const [droneOfPeaceActive, setDroneOfPeaceActive] = useState(false);
+  const [chargerTurretActive, setChargerTurretActive] = useState(false);
+  const [oliviaDeityMarkStacks,    setOliviaDeityMarkStacks]    = useState(0);
+  const [oliviaAngelicShieldActive,setOliviaAngelicShieldActive] = useState(false);
+  const [oliviaDroneActive,        setOliviaDroneActive]         = useState(false);
+  const [oliviaChargerTurretActive,setOliviaChargerTurretActive] = useState(false);
+  const [buffs, setBuffs] = useState(() => {
+    try { const s = localStorage.getItem("goc_buffs"); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  useEffect(() => { try { localStorage.setItem("goc_buffs", JSON.stringify(buffs)); } catch {} }, [buffs]);
+
   const [oliviaStats,  setOliviaStats]  = useState(() => {
     try { const s = localStorage.getItem("goc_olivia"); return s ? {...initialOlivia,...JSON.parse(s)} : initialOlivia; } catch { return initialOlivia; }
   });
   const [flags, setFlags] = useState({ isCrit:true, isDebuff:false, isPvP:true, isMagic:true, isPartner:false, isIsabel:false, isMina:false, isClass:true });
-  const [res,   setRes]   = useState(null);
   const [tab,   setTab]   = useState("atk");
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.innerHTML = `* { outline: none !important; box-shadow: none !important; } button::-moz-focus-inner { border: 0 !important; }`;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   useEffect(() => { setShowAtkPopup(true); setAtkPopupSeen(true); }, []);
   const [mobileView, setMobileView] = useState("inputs"); // "inputs" | "results"
 
@@ -1660,6 +2772,7 @@ export default function App() {
   };
 
   const scrollRef = useRef(null);
+  const resultsRef = useRef(null);
   const scrollPositions = useRef({ atk:0, def:0, ch:0, ca:0, pt:0 });
 
   const handleTabChange = (newTab) => {
@@ -1676,8 +2789,118 @@ export default function App() {
     }
   }, [tab]);
 
-  const go = () => setRes(calcDamage({ atk, def, flags, charged:ch, chargedAtkVal, chargedAtkActive, chargedStacks }));
+  const BURN_BONUS_MAP = {"base":0.03,"base+":0.08,"advanced":0.13,"advanced+":0.13};
+  const buffedAtk = useMemo(() => {
+    let a = {...atk};
+    buffs.filter(b=>b.target==="atk").forEach(b=>{
+      if(b.type==="flat") a[b.stat] = (a[b.stat]||0) + Number(b.value);
+      else a[b.stat] = (a[b.stat]||0) + Number(b.value)/100;
+    });
+    if (deityMarkStacks > 0) a.bonoDano = (a.bonoDano||0) + deityMarkStacks * 0.025;
+    if (burnBoatActive) a.bonoDano = (a.bonoDano||0) + (BURN_BONUS_MAP[burnBoatLevel] || 0);
+    if (truthShieldActive && (truthShieldLevel==="base+"||truthShieldLevel==="advanced"||truthShieldLevel==="advanced+")) a.bonoDano = (a.bonoDano||0) + 0.05;
+    if (droneOfPeaceActive) a.bonoDano = (a.bonoDano||0) + 0.05;
+    if (chargerTurretActive) a.bonoDano = (a.bonoDano||0) + 0.30;
+    return a;
+  }, [atk, buffs, deityMarkStacks, burnBoatLevel, burnBoatActive, truthShieldActive, truthShieldLevel, droneOfPeaceActive, chargerTurretActive]);
+  const buffedDef = useMemo(() => {
+    let d = {...def};
+    buffs.filter(b=>b.target==="def").forEach(b=>{
+      if(b.type==="flat") d[b.stat] = (d[b.stat]||0) + Number(b.value);
+      else d[b.stat] = (d[b.stat]||0) + Number(b.value)/100;
+    });
+    return d;
+  }, [def, buffs]);
+
+  const buffedOliviaStats = useMemo(() => {
+    let o = {...oliviaStats};
+    if (oliviaDeityMarkStacks > 0) o.bonoDano = (o.bonoDano||0) + oliviaDeityMarkStacks * 0.025;
+    if (oliviaDroneActive)         o.bonoDano = (o.bonoDano||0) + 0.05;
+    if (oliviaChargerTurretActive) o.bonoDano = (o.bonoDano||0) + 0.30;
+    return o;
+  }, [oliviaStats, oliviaDeityMarkStacks, oliviaDroneActive, oliviaChargerTurretActive]);
+
+  const res = useMemo(() =>
+    calcDamage({ atk: buffedAtk, def: buffedDef, flags, charged:ch, chargedAtkVal, chargedAtkActive, chargedStacks }),
+    [buffedAtk, buffedDef, flags, ch, chargedAtkVal, chargedAtkActive, chargedStacks]
+  );
+  const go = useCallback(() => {
+    if (isMobile) {
+      setMobileView("results");
+      setTimeout(() => { if (resultsRef.current) resultsRef.current.scrollTo({ top: 0, behavior: "smooth" }); }, 60);
+    }
+  }, [isMobile]);
+
+  // ── Build share ──────────────────────────────────────────────────────────
+  const [buildCopied, setBuildCopied] = useState(false);
+
+  const serializeBuild = useCallback(() => {
+    const payload = {
+      atk, def, ch, chargedAtkVal, chargedAtkActive, chargedStacks,
+      flags, buffs, oliviaStats,
+      angelicShieldActive, deityMarkStacks,
+      burnBoatActive, burnBoatLevel, burnBoatMaxHp, burnBoatHpPct,
+      truthShieldActive, truthShieldLevel, truthShieldMaxHp, truthShieldPvP,
+      droneOfPeaceActive, chargerTurretActive,
+      oliviaDeityMarkStacks, oliviaAngelicShieldActive, oliviaDroneActive, oliviaChargerTurretActive,
+      lang,
+    };
+    return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  }, [atk, def, ch, chargedAtkVal, chargedAtkActive, chargedStacks, flags, buffs, oliviaStats,
+      angelicShieldActive, deityMarkStacks, burnBoatActive, burnBoatLevel, burnBoatMaxHp, burnBoatHpPct,
+      truthShieldActive, truthShieldLevel, truthShieldMaxHp, truthShieldPvP, lang]);
+
+  const handleShareBuild = useCallback(() => {
+    const code = serializeBuild();
+    const url = `${window.location.origin}${window.location.pathname}#build=${code}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setBuildCopied(true);
+      setTimeout(() => setBuildCopied(false), 2200);
+    }).catch(() => {
+      window.prompt(lang === "es" ? "Copia esta URL:" : "Copy this URL:", url);
+    });
+  }, [serializeBuild, lang]);
+
+  // Load build from URL hash on mount (runs once)
+  useEffect(() => {
+    try {
+      const hash = window.location.hash;
+      if (!hash.startsWith("#build=")) return;
+      const code = hash.slice(7);
+      const p = JSON.parse(decodeURIComponent(escape(atob(code))));
+      if (p.atk)    setAtk(prev => ({...prev, ...p.atk}));
+      if (p.def)    setDef(prev => ({...prev, ...p.def}));
+      if (p.ch)     setCh(prev => ({...prev, ...p.ch}));
+      if (p.chargedAtkVal    !== undefined) setChargedAtkVal(p.chargedAtkVal);
+      if (p.chargedAtkActive !== undefined) setChargedAtkActive(p.chargedAtkActive);
+      if (p.chargedStacks    !== undefined) setChargedStacks(p.chargedStacks);
+      if (p.flags)  setFlags(prev => ({...prev, ...p.flags}));
+      if (p.buffs)  setBuffs(p.buffs);
+      if (p.oliviaStats) setOliviaStats(prev => ({...prev, ...p.oliviaStats}));
+      if (p.angelicShieldActive !== undefined) setAngelicShieldActive(p.angelicShieldActive);
+      if (p.deityMarkStacks     !== undefined) setDeityMarkStacks(p.deityMarkStacks);
+      if (p.burnBoatActive      !== undefined) setBurnBoatActive(p.burnBoatActive);
+      if (p.burnBoatLevel)  setBurnBoatLevel(p.burnBoatLevel);
+      if (p.burnBoatMaxHp   !== undefined) setBurnBoatMaxHp(p.burnBoatMaxHp);
+      if (p.burnBoatHpPct   !== undefined) setBurnBoatHpPct(p.burnBoatHpPct);
+      if (p.truthShieldActive !== undefined) setTruthShieldActive(p.truthShieldActive);
+      if (p.truthShieldLevel)  setTruthShieldLevel(p.truthShieldLevel);
+      if (p.truthShieldMaxHp !== undefined) setTruthShieldMaxHp(p.truthShieldMaxHp);
+      if (p.truthShieldPvP   !== undefined) setTruthShieldPvP(p.truthShieldPvP);
+      if (p.droneOfPeaceActive  !== undefined) setDroneOfPeaceActive(p.droneOfPeaceActive);
+      if (p.chargerTurretActive !== undefined) setChargerTurretActive(p.chargerTurretActive);
+      if (p.oliviaDeityMarkStacks     !== undefined) setOliviaDeityMarkStacks(p.oliviaDeityMarkStacks);
+      if (p.oliviaAngelicShieldActive !== undefined) setOliviaAngelicShieldActive(p.oliviaAngelicShieldActive);
+      if (p.oliviaDroneActive         !== undefined) setOliviaDroneActive(p.oliviaDroneActive);
+      if (p.oliviaChargerTurretActive !== undefined) setOliviaChargerTurretActive(p.oliviaChargerTurretActive);
+      if (p.lang) setLang(p.lang);
+      window.history.replaceState(null, "", window.location.pathname);
+    } catch { /* build code inválido, ignorar */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const t  = T[lang];
+  const totalActiveBuffs = buffs.length + (deityMarkStacks > 0 ? 1 : 0) + (angelicShieldActive ? 1 : 0) + (burnBoatActive ? 1 : 0) + (truthShieldActive ? 1 : 0) + (droneOfPeaceActive ? 1 : 0) + (chargerTurretActive ? 1 : 0);
 
   const FLAG_BTNS = [
     ["isCrit",    t.flagCrit],
@@ -1779,6 +3002,15 @@ export default function App() {
           </div>
           {/* Bottom row: action buttons */}
           <div style={{display:"flex", alignItems:"center", gap:5, flexWrap:"wrap", justifyContent:"flex-end"}}>
+            <button onClick={handleShareBuild} style={{
+              ...M("creditsBtn"),
+              color: buildCopied ? "#6ee7a0" : "#c08840",
+              borderColor: buildCopied ? "#166534" : "#4a3010",
+              background: buildCopied ? "rgba(110,231,160,0.10)" : "rgba(200,160,40,0.08)",
+              transition:"all 0.2s",
+            }}>
+              {buildCopied ? t.shareCopied : t.shareBtn}
+            </button>
             <button onClick={() => setShowChangelog(true)} style={{...M("creditsBtn"), color:"#c08840", borderColor:"#4a3010"}}>
               {t.changelogBtn}
             </button>
@@ -1826,21 +3058,41 @@ export default function App() {
 
           {/* LEFT */}
           <div style={{...M("left"), display: (isMobile && mobileView==="results") || (isMobile && tab==="pt" && (oliviaOpen || isabelOpen)) ? "none" : "flex"}}>
-            <div style={{...S.tabBar, overflowX: isMobile ? "auto" : "visible", scrollbarWidth:"none"}}>
-              {[["atk",t.tabAtk],["def",t.tabDef],["ch",t.tabCh],["ca",t.tabCA],["pt",t.tabPartners]].map(([k,l])=>(
-                <button key={k} style={{
-                  ...M("tab"),
-                  ...(tab===k?S.tabOn:{}),
-                  ...(k==="ca"&&chargedAtkActive?S.tabCharged:{}),
-                }} onClick={()=>handleTabChange(k)}>{l}</button>
-              ))}
-            </div>
+            {(() => {
+              const TABS = [["atk",t.tabAtk],["def",t.tabDef],["ch",t.tabCh],["ca",t.tabCA],["bf", totalActiveBuffs > 0 ? `${t.tabBuffs} (${totalActiveBuffs})` : t.tabBuffs],["pt",t.tabPartners]];
+              const tabStyle = (k) => ({
+                ...M("tab"),
+                borderBottom: tab===k ? (k==="ca"&&chargedAtkActive ? "2px solid #9d6ef8" : "2px solid #e05520") : "2px solid transparent",
+                color: tab===k ? (k==="ca"&&chargedAtkActive ? "#c4b5fd" : "#f0c060") : "#6a5030",
+                background: tab===k ? (k==="ca"&&chargedAtkActive ? "rgba(124,58,237,0.07)" : "rgba(220,84,24,0.07)") : "transparent",
+              });
+              if (isMobile) {
+                const row1 = TABS.slice(0,3);
+                const row2 = TABS.slice(3);
+                return (
+                  <div style={{borderBottom:"1px solid #1e1408"}}>
+                    <div style={{display:"flex",width:"100%"}}>
+                      {row1.map(([k,l]) => <button key={k} style={{...tabStyle(k),flex:1,borderBottom: tab===k?(k==="ca"&&chargedAtkActive?"2px solid #9d6ef8":"2px solid #e05520"):"2px solid transparent"}} onClick={()=>handleTabChange(k)}>{l}</button>)}
+                    </div>
+                    <div style={{display:"flex",width:"100%",borderTop:"1px solid #1e1408"}}>
+                      {row2.map(([k,l]) => <button key={k} style={{...tabStyle(k),flex:1,borderBottom: tab===k?(k==="ca"&&chargedAtkActive?"2px solid #9d6ef8":"2px solid #e05520"):"2px solid transparent"}} onClick={()=>handleTabChange(k)}>{l}</button>)}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div style={{...S.tabBar, overflowX:"auto", scrollbarWidth:"none", scrollbarColor:"transparent transparent"}}>
+                  {TABS.map(([k,l]) => <button key={k} style={tabStyle(k)} onClick={()=>handleTabChange(k)}>{l}</button>)}
+                </div>
+              );
+            })()}
 
-            <div ref={scrollRef} style={{...M("scroll"), ...(tab==="pt" ? {maxHeight:"none", overflowY:"visible"} : {})}}>
+            <div ref={scrollRef} style={{...M("scroll"), ...((tab==="pt" || tab==="bf") ? {maxHeight:"none", overflowY:"visible"} : {})}}>
               {tab==="atk" && Object.keys(initialAttacker).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={atk[f]} onChange={ua} isPercent={PCT_FIELDS.has(f)}/>)}
               {tab==="def" && Object.keys(initialDefender).filter(f => f !== "reduccionPenetracion").map(f=><StatInput key={f} label={t.labels[f]} field={f} value={def[f]} onChange={ud} isPercent={PCT_FIELDS.has(f)}/>)}
               {tab==="ch"  && <HeavyAtkPanel t={t} ch={ch} uc={uc} />}
               {tab==="pt"  && <PartnersPanel t={t} flags={flags} tg={tg} isabelOpen={isabelOpen} setIsabelOpen={setIsabelOpen} oliviaOpen={oliviaOpen} setOliviaOpen={setOliviaOpen} onOliviaClick={handleOliviaClick} onIsabelClick={handleIsabelClick} />}
+              {tab==="bf"  && <BuffsPanel t={t} buffs={buffs} setBuffs={setBuffs} atk={atk} def={def} angelicShieldActive={angelicShieldActive} setAngelicShieldActive={setAngelicShieldActive} deityMarkStacks={deityMarkStacks} setDeityMarkStacks={setDeityMarkStacks} burnBoatLevel={burnBoatLevel} setBurnBoatLevel={setBurnBoatLevel} burnBoatMaxHp={burnBoatMaxHp} setBurnBoatMaxHp={setBurnBoatMaxHp} burnBoatHpPct={burnBoatHpPct} setBurnBoatHpPct={setBurnBoatHpPct} burnBoatActive={burnBoatActive} setBurnBoatActive={setBurnBoatActive} truthShieldActive={truthShieldActive} setTruthShieldActive={setTruthShieldActive} truthShieldLevel={truthShieldLevel} setTruthShieldLevel={setTruthShieldLevel} truthShieldMaxHp={truthShieldMaxHp} setTruthShieldMaxHp={setTruthShieldMaxHp} truthShieldPvP={truthShieldPvP} setTruthShieldPvP={setTruthShieldPvP} droneOfPeaceActive={droneOfPeaceActive} setDroneOfPeaceActive={setDroneOfPeaceActive} chargerTurretActive={chargerTurretActive} setChargerTurretActive={setChargerTurretActive} onCalc={()=>{ setMobileView("results"); handleTabChange("atk"); }} />}
               {tab==="ca"  && (
                 <ChargedAtkPanel t={t}
                   chargedAtkVal={chargedAtkVal} setChargedAtkVal={setChargedAtkVal}
@@ -1851,7 +3103,7 @@ export default function App() {
             </div>
 
             {/* FLAGS + CALC — hidden on partners tab */}
-            {tab !== "pt" && <>
+            {tab !== "pt" && tab !== "bf" && <>
               <div style={M("flagBox")}>
                 <div style={S.flagTitle}>{t.conditions}</div>
                 <div style={S.flagGrid}>
@@ -1870,7 +3122,7 @@ export default function App() {
                 </div>
               </div>
               <div style={{display:"flex",gap:8,margin:"14px 18px 18px"}}>
-              <button style={{...M("btn"),margin:0,flex:1}} onClick={() => { go(); if(isMobile) setMobileView("results"); }}>{t.calcBtn}</button>
+              {isMobile && <button style={{...M("btn"),margin:0,flex:1}} onClick={go}>{t.mobileShowResults}</button>}
               <button style={{padding:"15px 14px",background:"rgba(200,160,40,0.08)",border:"1px solid #3a2510",borderRadius:2,color:"#a08040",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700,letterSpacing:"0.08em",flexShrink:0}}
                 onClick={() => {
                   if(tab==="atk") { setAtk(initialAttacker); localStorage.removeItem("goc_atk"); }
@@ -1908,21 +3160,31 @@ export default function App() {
                   ◀ {t.mobileShowInputs}
                 </button>
               )}
-              <OliviaPanel t={t} def={def} stats={oliviaStats} setStats={setOliviaStats} />
+              <OliviaPanel t={t} def={def} stats={buffedOliviaStats} setStats={setOliviaStats}
+                deityMarkStacks={oliviaDeityMarkStacks} setDeityMarkStacks={setOliviaDeityMarkStacks}
+                angelicShieldActive={oliviaAngelicShieldActive} setAngelicShieldActive={setOliviaAngelicShieldActive}
+                droneActive={oliviaDroneActive} setDroneActive={setOliviaDroneActive}
+                chargerTurretActive={oliviaChargerTurretActive} setChargerTurretActive={setOliviaChargerTurretActive}
+                globalDeityMarkStacks={deityMarkStacks} globalAngelicShieldActive={angelicShieldActive}
+                globalDroneActive={droneOfPeaceActive} globalChargerTurretActive={chargerTurretActive}
+              />
             </div>
           )}
 
         </div>{/* end left+partner row */}
 
         {/* RIGHT — results panel */}
-        <div style={{...M("right"), display: (tab==="pt" && (isMobile || isabelOpen || oliviaOpen)) || (isMobile && mobileView==="inputs") ? "none" : "flex"}}>
+        <div style={{...M("right"), display: (tab==="pt" && (isMobile || isabelOpen || oliviaOpen)) || (isMobile && mobileView==="inputs") ? "none" : "flex", ...(tab==="bf" ? {borderLeft:"1px solid #2a1e08"} : {})}}>
           {isMobile && (
             <button onClick={() => setMobileView("inputs")}
               style={{padding:"10px 16px", background:"transparent", border:"none", borderBottom:"1px solid #1e1408", color:"#f0a060", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, letterSpacing:"0.1em", textAlign:"left", width:"100%"}}>
               {t.mobileShowInputs}
             </button>
           )}
-          {!res && (
+          {tab==="bf" && (
+            <BuffsActivePanel t={t} buffs={buffs} setBuffs={setBuffs} atk={atk} def={def} deityMarkStacks={deityMarkStacks} angelicShieldActive={angelicShieldActive} burnBoatLevel={burnBoatLevel} burnBoatMaxHp={burnBoatMaxHp} burnBoatHpPct={burnBoatHpPct} buffedAtk={buffedAtk} burnBoatActive={burnBoatActive} truthShieldActive={truthShieldActive} truthShieldLevel={truthShieldLevel} truthShieldMaxHp={truthShieldMaxHp} truthShieldPvP={truthShieldPvP} droneOfPeaceActive={droneOfPeaceActive} chargerTurretActive={chargerTurretActive} />
+          )}
+          {tab!=="bf" && !res && (
             <div style={S.empty}>
               <div style={{fontSize:56,opacity:0.12}}>⚔</div>
               <p style={{color:"#5a4a2a",fontSize:14,textAlign:"center",lineHeight:2,whiteSpace:"pre-line"}}>
@@ -1930,8 +3192,8 @@ export default function App() {
               </p>
             </div>
           )}
-          {res && (
-            <div style={M("rBody")}>
+          {tab!=="bf" && res && (
+            <div ref={resultsRef} style={M("rBody")}>
               <SecTitle>{t.secBase}</SecTitle>
               <RRow label={t.defPost}  value={res.defensafinal}/>
               <RRow label={t.atkEff}   value={res.ataquefinal}/>
@@ -2000,6 +3262,19 @@ export default function App() {
               <RRow label={t.danoSinDebuff} value={res.danofinal_base}   color="#94a3b8"/>
               {flags.isDebuff&&<RRow label={t.danoConDebuff} value={res.danofinal_debuff} color="#fb923c" bold size={17}/>}
               <RRow label={flags.isDebuff ? t.heavyDebuff : flags.isCrit ? t.heavyNormal : t.heavyOnly} value={res.heavy_calc} color="#f87171" bold size={22}/>
+              {angelicShieldActive && (
+                <div style={{marginTop:10,padding:"8px 12px",background:"rgba(248,113,113,0.08)",border:"1px solid #7f1d1d",borderRadius:2}}>
+                  <div style={{fontSize:10,color:"#f87171",letterSpacing:"0.15em",marginBottom:6}}>⚔ ANGELIC SHIELD ×0.50</div>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#f87171",fontFamily:"monospace"}}>
+                    <span>{flags.isDebuff?t.danoConDebuff:t.danoSinDebuff}</span>
+                    <span style={{fontWeight:700}}>{Math.round((res.danofinal_debuff||res.danofinal_base)*0.5).toLocaleString("es-ES")}</span>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:15,color:"#f87171",fontFamily:"monospace",marginTop:4}}>
+                    <span>{flags.isDebuff?t.heavyDebuff:flags.isCrit?t.heavyNormal:t.heavyOnly}</span>
+                    <span style={{fontWeight:900}}>{Math.round(res.heavy_calc*0.5).toLocaleString("es-ES")}</span>
+                  </div>
+                </div>
+              )}
 
               <SecTitle>{t.secChart}</SecTitle>
               {(() => {
@@ -2059,7 +3334,7 @@ export default function App() {
 }
 
 const S = {
-  root:{minHeight:"100vh",background:"#09090b",color:"#d6cfc4",fontFamily:"'Courier New',monospace",position:"relative",overflow:"hidden"},
+  root:{minHeight:"100vh",background:"#09090b",color:"#d6cfc4",fontFamily:"'Courier New',monospace",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column"},
   bgGrid:{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",backgroundImage:"linear-gradient(rgba(200,160,60,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(200,160,60,0.04) 1px,transparent 1px)",backgroundSize:"44px 44px"},
   bgGlow:{position:"fixed",inset:0,zIndex:0,pointerEvents:"none",background:"radial-gradient(ellipse at 15% 45%,rgba(180,40,10,0.09) 0%,transparent 55%),radial-gradient(ellipse at 85% 20%,rgba(60,40,160,0.07) 0%,transparent 50%)"},
   hdr:{position:"relative",zIndex:100,display:"flex",alignItems:"center",gap:14,padding:"20px 28px 16px",borderBottom:"1px solid #2a1f10",background:"linear-gradient(180deg,#0f0d08,transparent)",flexWrap:"wrap"},
@@ -2079,14 +3354,14 @@ const S = {
   creditsDropLbl:{fontSize:11,color:"#5a4020"},
   creditsDropVal:{fontSize:11,color:"#a08040",fontFamily:"monospace",textAlign:"right"},
   tenacityBtn:{padding:"7px 13px",background:"rgba(202,138,4,0.12)",border:"1px solid #78350f",borderRadius:2,color:"#fbbf24",cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:700,letterSpacing:"0.08em",transition:"all 0.15s",flexShrink:0},
-  body:{position:"relative",zIndex:1,display:"flex",flexDirection:"row",alignItems:"stretch",minHeight:"calc(100vh - 96px)"},
-  left:{width:370,flexShrink:0,display:"flex",flexDirection:"column",borderRight:"1px solid #1e1408"},
+  body:{position:"relative",zIndex:1,display:"flex",flexDirection:"row",alignItems:"stretch",minHeight:"calc(100vh - 96px)",maxWidth:1100,width:"100%",minWidth:700},
+  left:{width:360,flexShrink:0,display:"flex",flexDirection:"column",borderRight:"1px solid #1e1408",overflowX:"hidden",position:"relative"},
   right:{flex:1,display:"flex",flexDirection:"column",minWidth:0},
-  tabBar:{display:"flex",borderBottom:"1px solid #1e1408"},
-  tab:{flex:1,padding:"12px 2px",background:"transparent",border:"none",color:"#6a5030",cursor:"pointer",fontSize:10,letterSpacing:"0.06em",fontFamily:"inherit",borderBottom:"2px solid transparent",transition:"all 0.14s"},
+  tabBar:{display:"flex",borderBottom:"1px solid #1e1408",overflowX:"auto",scrollbarWidth:"none",width:"100%"},
+  tab:{flex:1,padding:"10px 2px",background:"transparent",border:"none",outline:"none",color:"#6a5030",cursor:"pointer",fontSize:9,letterSpacing:"0.02em",fontFamily:"inherit",borderBottom:"2px solid transparent",transition:"all 0.14s",whiteSpace:"nowrap"},
   tabOn:{color:"#f0c060",borderBottomColor:"#e05520",background:"rgba(220,84,24,0.07)"},
   tabCharged:{color:"#c4b5fd",borderBottomColor:"#9d6ef8",background:"rgba(124,58,237,0.07)"},
-  scroll:{flex:1,overflowY:"auto",padding:"12px 18px",maxHeight:"40vh",scrollbarWidth:"thin",scrollbarColor:"#3a2010 transparent"},
+  scroll:{flex:1,overflowY:"auto",overflowX:"hidden",padding:"12px 18px",maxHeight:"40vh",scrollbarWidth:"thin",scrollbarColor:"#3a2010 transparent"},
   sRow:{display:"flex",alignItems:"center",padding:"7px 0",borderBottom:"1px solid #181008"},
   sLbl:{fontSize:12,color:"#8a7045",width:180,flexShrink:0,paddingRight:10,lineHeight:1.3}, // overridden by M()
   sWrap:{display:"flex",alignItems:"center",gap:4,marginLeft:"auto",width:116},
@@ -2100,7 +3375,7 @@ const S = {
   flagCharged:{background:"rgba(124,58,237,0.22)",borderColor:"#9d6ef8",color:"#c4b5fd"},
   btn:{margin:"14px 18px 18px",padding:"15px",background:"linear-gradient(135deg,#7a1212,#e05520)",border:"none",borderRadius:2,cursor:"pointer",color:"#fff",fontSize:14,fontWeight:900,letterSpacing:"0.22em",fontFamily:"inherit",textShadow:"0 1px 3px rgba(0,0,0,0.4)"},
   empty:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12},
-  rBody:{padding:"18px 28px 36px",overflowY:"auto",flex:1},
+  rBody:{padding:"18px 18px 36px 16px",overflowY:"auto",flex:1},
   secTitle:{fontSize:11,color:"#c08840",letterSpacing:"0.2em",borderLeft:"3px solid #e05520",paddingLeft:9,marginBottom:10,marginTop:22},
   rRow:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"7px 0",borderBottom:"1px solid #181008"},
   rLbl:{fontSize:13,color:"#8a7850"},
