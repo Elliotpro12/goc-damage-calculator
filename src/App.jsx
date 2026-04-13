@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect, useContext, useMemo } 
 
 /*
  * ══════════════════════════════════════════════════════════════════
- * DRAFT CHANGELOG — v2.0 (✅ PUBLICADO — Abril 2026)
+ * DRAFT CHANGELOG — v2.1 (✅ PUBLICADO — Abril 2026)
  * ══════════════════════════════════════════════════════════════════
  *
  * [SESSION 2 — Fixes aplicados]
@@ -62,6 +62,18 @@ import React, { useState, useCallback, useRef, useEffect, useContext, useMemo } 
  * TAB BAR EN MÓVIL
  *   · Las 6 pestañas se dividenen 2 filas de 3 en móvil (ATK/DEF/HEAVY arriba, CARGADO/BUFFS/PARTNERS abajo)
  *   · En PC se mantiene la fila única horizontal sin cambios
+ *
+ * EFECTO HEAVY ATK APLICADO AL DAÑO
+ *   · Toggle "Aplicar efecto al daño" en el panel de Heavy ATK
+ *   · Cuando activo, muestra bloque en resultados con daño × (1 + dmg_recibido/100)
+ *   · Se aplica como multiplicador final sobre todo el daño calculado
+ *   · Muestra daño base+crít, con debuff y heavy con el efecto aplicado
+ *   · Incluido en build share
+ *
+ * EFECTO HEAVY ATK EN OLIVIA
+ *   · Toggle independiente en el panel de Olivia (usa las stats de la pestaña ⚡ HEAVY)
+ *   · Muestra el multiplicador activo: ×(1 + dmg_recibido/100)
+ *   · Bloque de resultados dorado al final con daño base, debuff y heavy con el efecto
  *
  * PESTAÑA BUFFS / DEBUFFS
  * - Nueva pestaña ✦ BUFFS entre ATK Cargado y Partners
@@ -149,7 +161,7 @@ function useIsMobile() {
 const T = {
   es: {
     tagline: "// GUARDIANS OF CLOUDIA — SIMULACIÓN TÁCTICA",
-    title: "CALCULADORA DE DAÑO  v2.0",
+    title: "CALCULADORA DE DAÑO  v2.1",
     tabAtk: "⚔ ATK", tabDef: "🛡 DEF", tabCh: "⚡ HEAVY", tabCA: "🔋 CARGADO",
     conditions: "CONDICIONES DEL GOLPE",
     flagCrit: "💥 Crítico", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -280,6 +292,16 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v2.1", date:"Abril 2026", label:"Efecto Heavy ATK",
+        changes:[
+          "Efecto Heavy ATK aplicable al daño — toggle en pestaña ⚡ HEAVY",
+          "Multiplica el daño final por ×(1 + dmg_recibido/100) como multiplicador separado al final",
+          "Muestra daño base, con debuff y heavy con el efecto aplicado en el panel de resultados",
+          "Olivia: toggle independiente 'Aplicar efecto Heavy ATK' en su propio panel",
+          "Olivia usa las stats de la pestaña ⚡ HEAVY — el multiplicador se actualiza en tiempo real",
+          "Ambos toggles incluidos en build share (📤 Compartir)",
+        ]
+      },
       { version:"v2.0", date:"Abril 2026", label:"Gran Actualización",
         changes:[
           "Pestaña ✦ BUFFS — buffs/debuffs manuales con nombre, agrupados por stat con valor base y final",
@@ -439,7 +461,7 @@ const T = {
       { label: "Fórmulas y mecánicas", value: "xDarKz" },
       { label: "Desarrollo UI / React", value: "Claude (Anthropic)" },
       { label: "Juego", value: "Guardians of Cloudia" },
-      { label: "Versión", value: "v2.0" },
+      { label: "Versión", value: "v2.1" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Bonus plano de skill",
@@ -482,6 +504,10 @@ const T = {
     heavyOnly: "Heavy hit ×1.30", heavyNormal: "Heavy hit ×1.30 + crít.", heavyDebuff: "Heavy hit ×1.30 + crít. + debuff",
     barNormal: "Base + Crít.", barNoCritHeavy: "Sin crít. + Heavy", barCritHeavy: "Crít. + Heavy", barBaseDebuff: "Base + Debuff", barBaseDebuffHeavy: "Base + Debuff + Heavy", barDebuff: "Crít. + Debuff", barDebuffHeavy: "Crít. + Debuff + Heavy", secChartDebuff: "DEBUFF DMG",
     probAcierto: "Probabilidad total de acierto", dmgRecibido: "Efecto 'DMG recibido aumentado' dejado por Heavy ATK (debuff)",
+    heavyEffectToggle: "Aplicar efecto Heavy ATK",
+    heavyEffectActive: "⚡ Efecto Heavy activo",
+    secHeavyEffect: "EFECTO HEAVY ATK (DMG RECIBIDO +%)",
+    heavyEffectNote: "Multiplicador final aplicado después de todo",
     heavyInfoBtn: "❓ ¿Cómo funciona Heavy ATK?",
     heavyInfoTitle: "MECÁNICA — HEAVY ATK",
     heavyInfoLines: [
@@ -532,7 +558,7 @@ const T = {
   },
   en: {
     tagline: "// GUARDIANS OF CLOUDIA — TACTICAL SIMULATION",
-    title: "DAMAGE CALCULATOR  v2.0",
+    title: "DAMAGE CALCULATOR  v2.1",
     tabAtk: "⚔ ATK", tabDef: "🛡 DEF", tabCh: "⚡ HEAVY", tabCA: "🔋 CHARGED",
     conditions: "HIT CONDITIONS",
     flagCrit: "💥 Critical", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -659,6 +685,16 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v2.1", date:"April 2026", label:"Heavy ATK Effect",
+        changes:[
+          "Heavy ATK effect applicable to damage — toggle in ⚡ HEAVY tab",
+          "Multiplies final damage by ×(1 + dmg_received/100) as a separate final multiplier",
+          "Shows base, debuff and heavy damage with the effect applied in the results panel",
+          "Olivia: independent 'Apply Heavy ATK effect' toggle in her own panel",
+          "Olivia uses stats from the ⚡ HEAVY tab — multiplier updates in real time",
+          "Both toggles included in build share (📤 Share)",
+        ]
+      },
       { version:"v2.0", date:"April 2026", label:"Major Update",
         changes:[
           "✦ BUFFS tab — manual buffs/debuffs with optional name, grouped by stat with base and final values",
@@ -818,7 +854,7 @@ const T = {
       { label: "Formulas & mechanics", value: "xDarKz" },
       { label: "UI / React development", value: "Claude (Anthropic)" },
       { label: "Game", value: "Guardians of Cloudia" },
-      { label: "Version", value: "v2.0" },
+      { label: "Version", value: "v2.1" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Skill flat bonus",
@@ -861,6 +897,10 @@ const T = {
     heavyOnly: "Heavy hit ×1.30", heavyNormal: "Heavy hit ×1.30 + crit", heavyDebuff: "Heavy hit ×1.30 + crit + debuff",
     barNormal: "Base + Crit.", barNoCritHeavy: "No crit + Heavy", barCritHeavy: "Crit. + Heavy", barBaseDebuff: "Base + Debuff", barBaseDebuffHeavy: "Base + Debuff + Heavy", barDebuff: "Crit. + Debuff", barDebuffHeavy: "Crit. + Debuff + Heavy", secChartDebuff: "DEBUFF DMG",
     probAcierto: "Total hit probability", dmgRecibido: "'Damage received increase' effect left by Heavy ATK (debuff)",
+    heavyEffectToggle: "Apply Heavy ATK effect",
+    heavyEffectActive: "⚡ Heavy effect active",
+    secHeavyEffect: "HEAVY ATK EFFECT (DMG RECEIVED +%)",
+    heavyEffectNote: "Final multiplier applied after everything",
     heavyInfoBtn: "❓ How does Heavy ATK work?",
     heavyInfoTitle: "MECHANICS — HEAVY ATK",
     heavyInfoLines: [
@@ -1886,7 +1926,7 @@ function SkillsAccordion({ t, angelicShieldActive, setAngelicShieldActive, deity
 // ── Changelog Popup ───────────────────────────────────────────────────────
 function ChangelogPopup({ t, onClose }) {
   const versionColors = {
-    "v2.0":"#f0c060",
+    "v2.1":"#f0c060", "v2.0":"#e0b050",
     "v0.9.1":"#86efac", "v0.9":"#fcd34d", "v0.8":"#fb923c", "v0.6":"#a78bfa", "v0.5":"#f87171",
     "v0.4":"#60a5fa", "v0.3":"#34d399", "v0.2":"#fb923c", "v0.1":"#94a3b8",
   };
@@ -1983,7 +2023,7 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
         <div style={{...P.noteBox, background:"rgba(202,138,4,0.08)", border:"1px solid #4a3800"}}>
           <span style={P.noteIcon}>🔍</span>
           <span style={{...P.noteText, color:"#fbbf24"}}>
-            Guardians of Cloudia — Damage Calculator v2.0
+            Guardians of Cloudia — Damage Calculator v2.1
           </span>
         </div>
         <div style={{...P.btnRow, justifyContent:"center"}}>
@@ -2134,7 +2174,7 @@ function calcOliviaDamage({ atk, def, isCrit, isDebuff }) {
   };
 }
 
-function OliviaPanel({ t, def, stats, setStats, deityMarkStacks, setDeityMarkStacks, angelicShieldActive, setAngelicShieldActive, droneActive, setDroneActive, chargerTurretActive, setChargerTurretActive, globalDeityMarkStacks, globalAngelicShieldActive, globalDroneActive, globalChargerTurretActive }) {
+function OliviaPanel({ t, def, stats, setStats, deityMarkStacks, setDeityMarkStacks, angelicShieldActive, setAngelicShieldActive, droneActive, setDroneActive, chargerTurretActive, setChargerTurretActive, globalDeityMarkStacks, globalAngelicShieldActive, globalDroneActive, globalChargerTurretActive, heavyEffectActive, setHeavyEffectActive, dmgRecibido }) {
   const [isCrit,   setIsCrit]   = useState(true);
   const [isDebuff, setIsDebuff] = useState(false);
   const res = useMemo(() => calcOliviaDamage({ atk: stats, def, isCrit, isDebuff }), [stats, def, isCrit, isDebuff]);
@@ -2253,7 +2293,26 @@ function OliviaPanel({ t, def, stats, setStats, deityMarkStacks, setDeityMarkSta
         )}
       </div>
 
-
+      {/* Heavy Effect toggle */}
+      {dmgRecibido > 0 && (
+        <div style={{marginTop:10,padding:"8px 12px",background:"rgba(252,211,77,0.05)",border:"1px solid #3a2510",borderRadius:3,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontSize:11,color: heavyEffectActive?"#fcd34d":"#6a5030",fontWeight:700,marginBottom:2}}>{t.heavyEffectToggle}</div>
+            <div style={{fontSize:10,color: heavyEffectActive?"#fcd34d":"#4a3820",fontStyle:"italic",fontWeight: heavyEffectActive?700:400}}>
+              ⚡ Heavy ATK — ×{(1 + dmgRecibido/100).toFixed(4)} (+{dmgRecibido.toFixed(2)}%)
+            </div>
+          </div>
+          <button onClick={()=>setHeavyEffectActive(p=>!p)} style={{
+            padding:"5px 14px", borderRadius:2, cursor:"pointer", fontFamily:"inherit",
+            fontSize:12, fontWeight:700, outline:"none",
+            border:`1px solid ${heavyEffectActive?"#fcd34d":"#3a2510"}`,
+            background: heavyEffectActive?"rgba(252,211,77,0.12)":"transparent",
+            color: heavyEffectActive?"#fcd34d":"#6a5030",
+          }}>
+            {heavyEffectActive?"✓ ON":"OFF"}
+          </button>
+        </div>
+      )}
 
       {/* Results */}
       {res && (
@@ -2379,6 +2438,33 @@ function OliviaPanel({ t, def, stats, setStats, deityMarkStacks, setDeityMarkSta
                   </>
                 )}
               </>
+            );
+          })()}
+          {heavyEffectActive && dmgRecibido > 0 && (() => {
+            const mult = 1 + dmgRecibido / 100;
+            return (
+              <div style={{marginTop:10,padding:"10px 12px",background:"rgba(252,211,77,0.06)",border:"1px solid #78350f",borderRadius:2}}>
+                <div style={{fontSize:10,color:"#fcd34d",letterSpacing:"0.15em",marginBottom:4}}>
+                  {t.secHeavyEffect} ×{mult.toFixed(4)}
+                </div>
+                <div style={{fontSize:10,color:"#5a4020",fontStyle:"italic",marginBottom:8}}>{t.heavyEffectNote}</div>
+                {isCrit && (
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#a08855",fontFamily:"monospace",marginBottom:4}}>
+                    <span>{t.danoSinDebuff}</span>
+                    <span style={{fontWeight:700,color:"#fcd34d"}}>{Math.round(res.danofinal_base * mult).toLocaleString("es-ES")}</span>
+                  </div>
+                )}
+                {isDebuff && (
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#a08855",fontFamily:"monospace",marginBottom:4}}>
+                    <span>{t.danoConDebuff}</span>
+                    <span style={{fontWeight:700,color:"#fb923c"}}>{Math.round(res.danofinal_debuff * mult).toLocaleString("es-ES")}</span>
+                  </div>
+                )}
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:16,color:"#fcd34d",fontFamily:"monospace",borderTop:"1px solid #3a2010",paddingTop:6,marginTop:4}}>
+                  <span style={{fontWeight:700}}>{isDebuff?t.heavyDebuff:isCrit?t.heavyNormal:t.heavyOnly}</span>
+                  <span style={{fontWeight:900,fontSize:20}}>{Math.round(res.heavy_calc * mult).toLocaleString("es-ES")}</span>
+                </div>
+              </div>
             );
           })()}
         </div>
@@ -2592,10 +2678,9 @@ function PartnersPanel({ t, flags, tg, isabelOpen, setIsabelOpen, oliviaOpen, se
 }
 
 // ── Heavy ATK Panel ───────────────────────────────────────────────────────
-function HeavyAtkPanel({ t, ch, uc }) {
+function HeavyAtkPanel({ t, ch, uc, heavyEffectActive, setHeavyEffectActive }) {
   const [infoOpen, setInfoOpen] = useState(false);
 
-  // Compute heavy atk stats live from ch values
   const prob_no      = 1 - ch.ataque_fuerte_porcentaje;
   const prob_acierto = ch.ataque_fuerte_porcentaje * ch.hit_rate + prob_no * ch.evacion;
   const dmg_recibido = (ch.ataque_fuerte / 20) * 0.13;
@@ -2645,6 +2730,18 @@ function HeavyAtkPanel({ t, ch, uc }) {
             {dmg_recibido.toFixed(2)}%
           </span>
         </div>
+        <div style={{...S.hvResultRow, borderTop:"1px solid #2a1e08", marginTop:6, paddingTop:10}}>
+          <span style={{...S.hvResultLbl, color: heavyEffectActive?"#fcd34d":"#6a5030"}}>{t.heavyEffectToggle}</span>
+          <button onClick={()=>setHeavyEffectActive(p=>!p)} style={{
+            padding:"5px 14px", borderRadius:2, cursor:"pointer", fontFamily:"inherit",
+            fontSize:12, fontWeight:700, outline:"none",
+            border:`1px solid ${heavyEffectActive?"#fcd34d":"#3a2510"}`,
+            background: heavyEffectActive?"rgba(252,211,77,0.12)":"transparent",
+            color: heavyEffectActive?"#fcd34d":"#6a5030",
+          }}>
+            {heavyEffectActive?"✓ ON":"OFF"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -2664,6 +2761,8 @@ export default function App() {
   const [chargedAtkVal,    setChargedAtkVal]    = useState(0);
   const [chargedAtkActive, setChargedAtkActive] = useState(false);
   const [chargedStacks,    setChargedStacks]    = useState(1);
+  const [heavyEffectActive, setHeavyEffectActive] = useState(false);
+  const [oliviaHeavyEffectActive, setOliviaHeavyEffectActive] = useState(false);
   const [showPopup,        setShowPopup]        = useState(false);
   const [popupSeen,        setPopupSeen]        = useState(false);
   const [showOliviaPopup,  setShowOliviaPopup]  = useState(false);
@@ -2824,6 +2923,7 @@ export default function App() {
     calcDamage({ atk: buffedAtk, def: buffedDef, flags, charged:ch, chargedAtkVal, chargedAtkActive, chargedStacks }),
     [buffedAtk, buffedDef, flags, ch, chargedAtkVal, chargedAtkActive, chargedStacks]
   );
+  const dmg_recibido = (ch.ataque_fuerte / 20) * 0.13;
   const go = useCallback(() => {
     if (isMobile) {
       setMobileView("results");
@@ -2841,8 +2941,9 @@ export default function App() {
       angelicShieldActive, deityMarkStacks,
       burnBoatActive, burnBoatLevel, burnBoatMaxHp, burnBoatHpPct,
       truthShieldActive, truthShieldLevel, truthShieldMaxHp, truthShieldPvP,
-      droneOfPeaceActive, chargerTurretActive,
+      droneOfPeaceActive, chargerTurretActive, heavyEffectActive,
       oliviaDeityMarkStacks, oliviaAngelicShieldActive, oliviaDroneActive, oliviaChargerTurretActive,
+      oliviaHeavyEffectActive,
       lang,
     };
     return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
@@ -2889,10 +2990,12 @@ export default function App() {
       if (p.truthShieldPvP   !== undefined) setTruthShieldPvP(p.truthShieldPvP);
       if (p.droneOfPeaceActive  !== undefined) setDroneOfPeaceActive(p.droneOfPeaceActive);
       if (p.chargerTurretActive !== undefined) setChargerTurretActive(p.chargerTurretActive);
+      if (p.heavyEffectActive   !== undefined) setHeavyEffectActive(p.heavyEffectActive);
       if (p.oliviaDeityMarkStacks     !== undefined) setOliviaDeityMarkStacks(p.oliviaDeityMarkStacks);
       if (p.oliviaAngelicShieldActive !== undefined) setOliviaAngelicShieldActive(p.oliviaAngelicShieldActive);
       if (p.oliviaDroneActive         !== undefined) setOliviaDroneActive(p.oliviaDroneActive);
       if (p.oliviaChargerTurretActive !== undefined) setOliviaChargerTurretActive(p.oliviaChargerTurretActive);
+      if (p.oliviaHeavyEffectActive   !== undefined) setOliviaHeavyEffectActive(p.oliviaHeavyEffectActive);
       if (p.lang) setLang(p.lang);
       window.history.replaceState(null, "", window.location.pathname);
     } catch { /* build code inválido, ignorar */ }
@@ -3090,7 +3193,7 @@ export default function App() {
             <div ref={scrollRef} style={{...M("scroll"), ...((tab==="pt" || tab==="bf") ? {maxHeight:"none", overflowY:"visible"} : {})}}>
               {tab==="atk" && Object.keys(initialAttacker).map(f=><StatInput key={f} label={t.labels[f]} field={f} value={atk[f]} onChange={ua} isPercent={PCT_FIELDS.has(f)}/>)}
               {tab==="def" && Object.keys(initialDefender).filter(f => f !== "reduccionPenetracion").map(f=><StatInput key={f} label={t.labels[f]} field={f} value={def[f]} onChange={ud} isPercent={PCT_FIELDS.has(f)}/>)}
-              {tab==="ch"  && <HeavyAtkPanel t={t} ch={ch} uc={uc} />}
+              {tab==="ch"  && <HeavyAtkPanel t={t} ch={ch} uc={uc} heavyEffectActive={heavyEffectActive} setHeavyEffectActive={setHeavyEffectActive} />}
               {tab==="pt"  && <PartnersPanel t={t} flags={flags} tg={tg} isabelOpen={isabelOpen} setIsabelOpen={setIsabelOpen} oliviaOpen={oliviaOpen} setOliviaOpen={setOliviaOpen} onOliviaClick={handleOliviaClick} onIsabelClick={handleIsabelClick} />}
               {tab==="bf"  && <BuffsPanel t={t} buffs={buffs} setBuffs={setBuffs} atk={atk} def={def} angelicShieldActive={angelicShieldActive} setAngelicShieldActive={setAngelicShieldActive} deityMarkStacks={deityMarkStacks} setDeityMarkStacks={setDeityMarkStacks} burnBoatLevel={burnBoatLevel} setBurnBoatLevel={setBurnBoatLevel} burnBoatMaxHp={burnBoatMaxHp} setBurnBoatMaxHp={setBurnBoatMaxHp} burnBoatHpPct={burnBoatHpPct} setBurnBoatHpPct={setBurnBoatHpPct} burnBoatActive={burnBoatActive} setBurnBoatActive={setBurnBoatActive} truthShieldActive={truthShieldActive} setTruthShieldActive={setTruthShieldActive} truthShieldLevel={truthShieldLevel} setTruthShieldLevel={setTruthShieldLevel} truthShieldMaxHp={truthShieldMaxHp} setTruthShieldMaxHp={setTruthShieldMaxHp} truthShieldPvP={truthShieldPvP} setTruthShieldPvP={setTruthShieldPvP} droneOfPeaceActive={droneOfPeaceActive} setDroneOfPeaceActive={setDroneOfPeaceActive} chargerTurretActive={chargerTurretActive} setChargerTurretActive={setChargerTurretActive} onCalc={()=>{ setMobileView("results"); handleTabChange("atk"); }} />}
               {tab==="ca"  && (
@@ -3167,6 +3270,8 @@ export default function App() {
                 chargerTurretActive={oliviaChargerTurretActive} setChargerTurretActive={setOliviaChargerTurretActive}
                 globalDeityMarkStacks={deityMarkStacks} globalAngelicShieldActive={angelicShieldActive}
                 globalDroneActive={droneOfPeaceActive} globalChargerTurretActive={chargerTurretActive}
+                heavyEffectActive={oliviaHeavyEffectActive} setHeavyEffectActive={setOliviaHeavyEffectActive}
+                dmgRecibido={dmg_recibido}
               />
             </div>
           )}
@@ -3275,6 +3380,36 @@ export default function App() {
                   </div>
                 </div>
               )}
+              {heavyEffectActive && res.dmg_recibido > 0 && (() => {
+                const mult = 1 + res.dmg_recibido / 100;
+                const base    = res.danofinal_base;
+                const debuff  = res.danofinal_debuff;
+                const heavy   = res.heavy_calc;
+                return (
+                  <div style={{marginTop:10,padding:"10px 12px",background:"rgba(252,211,77,0.06)",border:"1px solid #78350f",borderRadius:2}}>
+                    <div style={{fontSize:10,color:"#fcd34d",letterSpacing:"0.15em",marginBottom:6}}>
+                      {t.secHeavyEffect} ×{mult.toFixed(4)}
+                    </div>
+                    <div style={{fontSize:10,color:"#5a4020",fontStyle:"italic",marginBottom:8}}>{t.heavyEffectNote}</div>
+                    {flags.isCrit && (
+                      <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#a08855",fontFamily:"monospace",marginBottom:4}}>
+                        <span>{t.danoSinDebuff}</span>
+                        <span style={{fontWeight:700,color:"#fcd34d"}}>{Math.round(base * mult).toLocaleString("es-ES")}</span>
+                      </div>
+                    )}
+                    {flags.isDebuff && (
+                      <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#a08855",fontFamily:"monospace",marginBottom:4}}>
+                        <span>{t.danoConDebuff}</span>
+                        <span style={{fontWeight:700,color:"#fb923c"}}>{Math.round(debuff * mult).toLocaleString("es-ES")}</span>
+                      </div>
+                    )}
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:16,color:"#fcd34d",fontFamily:"monospace",borderTop:"1px solid #3a2010",paddingTop:6,marginTop:4}}>
+                      <span style={{fontWeight:700}}>{flags.isDebuff?t.heavyDebuff:flags.isCrit?t.heavyNormal:t.heavyOnly}</span>
+                      <span style={{fontWeight:900,fontSize:20}}>{Math.round(heavy * mult).toLocaleString("es-ES")}</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <SecTitle>{t.secChart}</SecTitle>
               {(() => {
