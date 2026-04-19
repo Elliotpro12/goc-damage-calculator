@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect, useContext, useMemo } 
 
 /*
  * ══════════════════════════════════════════════════════════════════
- * DRAFT CHANGELOG — v2.1 (✅ PUBLICADO — Abril 2026)
+ * DRAFT CHANGELOG — v2.3 (✅ PUBLICADO — Abril 2026)
  * ══════════════════════════════════════════════════════════════════
  *
  * [SESSION 2 — Fixes aplicados]
@@ -74,6 +74,27 @@ import React, { useState, useCallback, useRef, useEffect, useContext, useMemo } 
  *   · Toggle independiente en el panel de Olivia (usa las stats de la pestaña ⚡ HEAVY)
  *   · Muestra el multiplicador activo: ×(1 + dmg_recibido/100)
  *   · Bloque de resultados dorado al final con daño base, debuff y heavy con el efecto
+ *
+ * IDIOMA CHINO (ZH)
+ *   · Añadido T.zh con traducción completa al chino simplificado
+ *   · Botón 🇨🇳 ZH en el toggle de idioma del header y popup de Tenacidad
+ *   · Terminología aproximada basada en ES/EN — pendiente de verificación por jugadores nativos
+ *
+ * FIX — FÓRMULA PROBABILIDAD DE GOLPE (HEAVY ATK)
+ *   · Fórmula anterior incorrecta: activacion*hit_rate + (1-activacion)*evacion → podía superar 100%
+ *   · Nueva fórmula: prob = clamp(0, activacion + (1-activacion) * max(0, hit_rate - evacion), 1)
+ *   · Heavy siempre golpea (inevitable) → cuando activa cuenta como 100% de acierto
+ *   · Ataques normales (cuando heavy no activa): hit efectivo = max(0, hit_rate - evacion)
+ *   · Si hit_rate >= evacion los golpes normales siempre conectan → prob total = 100%
+ *   · Si hit_rate = evacion los normales siempre fallan → prob = solo % activación heavy
+ *   · Resultado siempre clampeado a [0%, 100%]
+ *
+ * FIX — BUFFS DE PORCENTAJE EN STATS PLANOS (ataque)
+ *   · Bug: buff pct en ataque sumaba value/100 como decimal (ej: +10% sumaba 0.1 a 56400)
+ *   · Fix: stats planos (no en PCT_FIELDS) ahora se multiplican: ataque × (1 + value/100)
+ *   · Mismo fix aplicado a buffedDef para stats planos en el defensor
+ *   · Indicador visual en cadena de cálculo base cuando hay buffs activos en ataque:
+ *     muestra valor base ▲ +delta = valor buffado antes de calcular Ataque Efectivo
  *
  * PESTAÑA BUFFS / DEBUFFS
  * - Nueva pestaña ✦ BUFFS entre ATK Cargado y Partners
@@ -161,7 +182,7 @@ function useIsMobile() {
 const T = {
   es: {
     tagline: "// GUARDIANS OF CLOUDIA — SIMULACIÓN TÁCTICA",
-    title: "CALCULADORA DE DAÑO  v2.1",
+    title: "CALCULADORA DE DAÑO  v2.3",
     tabAtk: "⚔ ATK", tabDef: "🛡 DEF", tabCh: "⚡ HEAVY", tabCA: "🔋 CARGADO",
     conditions: "CONDICIONES DEL GOLPE",
     flagCrit: "💥 Crítico", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -292,6 +313,25 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v2.3", date:"Abril 2026", label:"Bug Fixes de Fórmula",
+        changes:[
+          "Bug fix: fórmula de probabilidad de golpe (Heavy ATK) era incorrecta — podía superar 100%",
+          "Nueva fórmula: prob = activación + (1−activación) × max(0, hit_rate − evasión), clampeado a [0%,100%]",
+          "Heavy siempre golpea (inevitable) — cuando activa cuenta como 100% de acierto",
+          "Ataques normales: hit efectivo = max(0, hit_rate − evasión)",
+          "Bug fix: buffs de porcentaje en stats planos (ATK) sumaban el decimal directamente en lugar de multiplicar",
+          "Fix: ATK buffado con % ahora calcula correctamente: ataque × (1 + valor%/100)",
+          "Mismo fix aplicado al defensor para stats planos",
+        ]
+      },
+      { version:"v2.2", date:"Abril 2026", label:"Idioma Chino & Bug Fixes",
+        changes:[
+          "Nuevo idioma: 🇨🇳 Chino simplificado (ZH) — traducción completa de todos los textos",
+          "Botón 🇨🇳 ZH en el toggle de idioma del header y popup de Tenacidad",
+          "Bug fix: campo 'initialAttacker' quedó dentro del objeto T al insertar T.zh",
+          "Bug fix: comillas dobles tipográficas chinas causaban error de sintaxis en el changelog ZH",
+        ]
+      },
       { version:"v2.1", date:"Abril 2026", label:"Efecto Heavy ATK",
         changes:[
           "Efecto Heavy ATK aplicable al daño — toggle en pestaña ⚡ HEAVY",
@@ -461,7 +501,7 @@ const T = {
       { label: "Fórmulas y mecánicas", value: "xDarKz" },
       { label: "Desarrollo UI / React", value: "Claude (Anthropic)" },
       { label: "Juego", value: "Guardians of Cloudia" },
-      { label: "Versión", value: "v2.1" },
+      { label: "Versión", value: "v2.3" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Bonus plano de skill",
@@ -558,7 +598,7 @@ const T = {
   },
   en: {
     tagline: "// GUARDIANS OF CLOUDIA — TACTICAL SIMULATION",
-    title: "DAMAGE CALCULATOR  v2.1",
+    title: "DAMAGE CALCULATOR  v2.3",
     tabAtk: "⚔ ATK", tabDef: "🛡 DEF", tabCh: "⚡ HEAVY", tabCA: "🔋 CHARGED",
     conditions: "HIT CONDITIONS",
     flagCrit: "💥 Critical", flagDebuff: "☠ Debuff", flagPvP: "⚔ PvP",
@@ -685,6 +725,25 @@ const T = {
     changelogBtn: "📋 Changelog",
     changelogTitle: "CHANGELOG",
     changelog: [
+      { version:"v2.3", date:"April 2026", label:"Formula Bug Fixes",
+        changes:[
+          "Bug fix: Heavy ATK hit probability formula was incorrect — could exceed 100%",
+          "New formula: prob = activation + (1−activation) × max(0, hit_rate − evasion), clamped to [0%,100%]",
+          "Heavy always hits (unavoidable) — when triggered counts as 100% hit",
+          "Normal attacks: effective hit = max(0, hit_rate − evasion)",
+          "Bug fix: percentage buffs on flat stats (ATK) were adding the decimal directly instead of multiplying",
+          "Fix: ATK buffed with % now calculates correctly: attack × (1 + value%/100)",
+          "Same fix applied to defender flat stats",
+        ]
+      },
+      { version:"v2.2", date:"April 2026", label:"Chinese Language & Bug Fixes",
+        changes:[
+          "New language: 🇨🇳 Simplified Chinese (ZH) — full translation of all texts",
+          "🇨🇳 ZH button added to language toggle in header and Tenacity popup",
+          "Bug fix: initialAttacker definition got absorbed into T object when inserting T.zh",
+          "Bug fix: Chinese typographic double quotes caused syntax error in ZH changelog",
+        ]
+      },
       { version:"v2.1", date:"April 2026", label:"Heavy ATK Effect",
         changes:[
           "Heavy ATK effect applicable to damage — toggle in ⚡ HEAVY tab",
@@ -854,7 +913,7 @@ const T = {
       { label: "Formulas & mechanics", value: "xDarKz" },
       { label: "UI / React development", value: "Claude (Anthropic)" },
       { label: "Game", value: "Guardians of Cloudia" },
-      { label: "Version", value: "v2.1" },
+      { label: "Version", value: "v2.3" },
     ],
     isabelLabels: {
       isabel_skill_scaling_flat_bonus: "Skill flat bonus",
@@ -949,6 +1008,295 @@ const T = {
       hit_rate:"Hit Rate (active)", evacion:"Enemy Evasion",
     },
   },
+  zh: {
+    tagline: "// 云上城之歌 — 战斗模拟器",
+    title: "伤害计算器  v2.3",
+    tabAtk: "⚔ 攻击", tabDef: "🛡 防御", tabCh: "⚡ 重击", tabCA: "🔋 蓄力",
+    conditions: "命中条件",
+    flagCrit: "💥 暴击", flagDebuff: "☠ 减益", flagPvP: "⚔ PvP",
+    flagMagic: "✦ 魔法", flagPhys: "🗡 物理", flagPartner: "🤝 Olivia", flagClass: "🎯 克制职业",
+    flagCharged: "🔋 蓄力攻击",
+    tabPartners: "👥 伙伴",
+    tabBuffs: "✦ 增益",
+    buffsTitle: "临时增益 / 减益",
+    buffsAddBtn: "+ 添加",
+    buffsTabAdd: "➕ 添加",
+    buffsTabActive: "✦ 已激活",
+    buffsName: "名称（可选）",
+    buffsTarget: "目标", buffsTargetAtk: "攻击方", buffsTargetDef: "防御方",
+    buffsStat: "属性", buffsValue: "数值",
+    buffsTypeFlat: "固定值", buffsTypePct: "百分比 (%)",
+    buffsActiveTitle: "已激活",
+    buffsResetBtn: "↺ 全部清除",
+    buffsEmpty: "无已激活增益",
+    buffsCalcBtn: "计算附带增益的伤害",
+    buffsViewList: "◀ 查看增益",
+    buffsListBuffs: "⬆ 增益",
+    buffsListDebuffs: "⬇ 减益",
+    skillsTitle: "已知技能",
+    skillsComingSoon: "即将推出",
+    classes: {
+      swordsman: "剑士", rogue: "刺客", bow: "弓手", gunner: "枪手", ironbreaker: "铁锤者",
+      mage: "法师", oracle: "神谕者", combatant: "格斗士", reaper: "死神",
+    },
+    skillAngelicShield: "天使之盾",
+    skillAngelicShieldDesc: "减少所有受到的伤害50%（PvP）。作为最终乘数生效。",
+    skillAngelicShieldActive: "⚔ 天使之盾已激活 — 最终伤害 ×0.50",
+    skillAngelicShieldClass: "神谕者 / 白贤者",
+    skillDeityMark: "神明印记",
+    skillDeityMarkDesc: "每层+2.5%伤害加成（最多5层）。",
+    skillDeityMarkStacks: "层数",
+    skillDeityMarkClass: "神谕者",
+    skillBurnBoat: "背水一战",
+    skillBurnBoatDesc: "牺牲当前10%生命值 → 生成护盾（背水一战）。激活期间：伤害加成。",
+    skillBurnBoatLevel: "技能等级",
+    skillBurnBoatLvBase: "基础 (+3%)", skillBurnBoatLvPlus: "基础+ (+8%)", skillBurnBoatLvAdv: "进阶 (+13%)", skillBurnBoatLvAdvPlus: "进阶+ (+13%)",
+    skillBurnBoatHp: "最大生命值",
+    skillBurnBoatHpPct: "当前生命值 %",
+    skillBurnBoatHpLost: "损失生命值",
+    skillBurnBoatShield: "预计护盾值",
+    skillBurnBoatShieldMax: "护盾上限 (ATK×360%)",
+    skillBurnBoatShieldFinal: "最终护盾值",
+    skillBurnBoatShieldAdv: "进阶护盾上限 (ATK×630%)",
+    skillBurnBoatDmgBonus: "已应用伤害加成",
+    skillBurnBoatSubclassNote: "⚠ 进阶和进阶+需要征服者转职",
+    skillDroneOfPeace: "和平无人机",
+    skillDroneOfPeaceDesc: "跟随所有友方10秒，提供+5%伤害加成。每位友方只能被一架无人机跟随。",
+    skillDroneOfPeaceClass: "枪手 / 指挥官",
+    skillChargerTurret: "充能炮台",
+    skillChargerTurretDesc: "被充能炮台治疗的友方获得【肾上腺素】：暂时提升+30%伤害加成。",
+    skillChargerTurretClass: "枪手 / 指挥官",
+    skillTruthShield: "真言护盾",
+    skillTruthShieldDesc: "生成护盾：ATK×366% + 最大生命值×10%。激活期间：+5%伤害加成。",
+    skillTruthShieldLevel: "技能等级",
+    skillTruthShieldLvBase: "基础", skillTruthShieldLvPlus: "基础+ (+5% 伤害加成)", skillTruthShieldLvAdv: "进阶（气功大师）", skillTruthShieldLvAdvPlus: "进阶+（气功大师）",
+    skillTruthShieldHp: "最大生命值",
+    skillTruthShieldShield: "预计护盾值",
+    skillTruthShieldShieldFinal: "最终护盾值",
+    skillTruthShieldShieldPvP: "最终护盾值（PvP ×0.50）",
+    skillTruthShieldDmgBonus: "已应用伤害加成",
+    skillTruthShieldPvP: "PvP (×0.50)",
+    skillTruthShieldSubclassNote: "⚠ 进阶需要气功大师转职",
+    claseLabel: "当前职业：", claseMagic: "魔法", claseFisica: "物理",
+    modoOlivia: "— Olivia模式",
+    partnerOlivia: "❄️ Olivia", partnerIsabel: "🌿 Isabel",
+    partnerOliviaDesc: "Olivia伤害计算器 — 独立属性，无PvP或职业加成。",
+    partnerIsabelDesc: "治疗计算器 — 技能1。",
+    isabelPopupTitle: "🌿 ISABEL — 技能1：森林祝福之地",
+    isabelPopupBody: "此计算器仅涵盖技能1的治疗：<strong>森林祝福之地</strong>。<br/><br/>Isabel的其他技能暂未包含。",
+    isabelPopupBtn: "明白了",
+    partnerActive: "已激活", partnerInactive: "未激活",
+    partnerLabel: "当前伙伴：",
+    oliviaPopupTitle: "⚠ 警告 — OLIVIA伤害计算",
+    oliviaPopupBody: [
+      "<strong>Olivia</strong>的伤害公式仍在研究中。",
+      "此计算器显示的结果可能<strong>不准确</strong>。",
+      "仅供参考，请勿作为精确数值使用。",
+    ],
+    oliviaPopupConfirm: "明白，继续",
+    oliviaPopupCancel: "取消",
+    tenacityPopupTitle: "⚠ 提示 — 计算精度",
+    tenacityPopupBody: [
+      "<strong>坚韧</strong>的机制仍是个谜 — 目前尚不清楚它如何将属性转化为<strong>穿透减免</strong>和/或<strong>伤害加成</strong>。",
+      "此计算器<strong>精度约为80%</strong>。结果可能因<strong>坚韧</strong>和/或战斗中<strong>实时属性变化</strong>而有所偏差。",
+      "仅供参考，请勿作为精确数值使用。",
+    ],
+    tenacityPopupConfirm: "明白了",
+    tenacityPopupBtn: "⚠ 精度说明",
+    isabelTitle: "🌿 ISABEL — 技能1：森林祝福之地",
+    isabelHpHint: "输入4位队友的生命值。Isabel是其中之一 — 她是唯一出战的，其他3位只提供属性。",
+    isabelSumHp: "生命值总和（伙伴）",
+    isabelBaseHeal: "基础治疗量",
+    isabelPveTitle: "PvE — 每次治疗量（×3）",
+    isabelPvpTitle: "PvP — 每次治疗量（×3）",
+    isabelTotalPve: "PvE总计（3次）",
+    isabelTotalPvp: "PvP总计（3次）",
+    isabelHealReduction: "治疗减免总计（仅PvP）",
+    oliviaCalcTitle: "❄️ OLIVIA — 伤害计算器",
+    oliviaFlagCrit: "💥 暴击", oliviaFlagDebuff: "☠ 减益",
+    oliviaFlagMagic: "✦ 魔法", oliviaFlagPhys: "🗡 物理",
+    oliviaClaseLabel: "伤害类型：",
+    oliviaAccPopupTitle: "⚠ 精度 — OLIVIA伤害计算",
+    oliviaAccPopupBody: [
+      "Olivia<strong>不使用坚韧</strong>，因此比主角更容易计算。",
+      "然而，计算结果<strong>仍非100%准确</strong> — 可能存在尚未发现的变量或交互。",
+      "仅供参考。",
+    ],
+    oliviaAccConfirm: "明白了",
+    partnerMina: "🛡 Mina",
+    partnerMinaDesc: "功能即将推出。",
+    oliviaFlatBonus: "技能固定加成",
+    oliviaAllyBuffs: "友方增益",
+    oliviaAllyBuffsNone: "增益标签中没有激活的友方技能",
+    oliviaPreRed: "神器减免前",
+    oliviaArtRed: "Olivia神器减免（−25%）",
+    oliviaLabels: {
+      skill_flat_bonus:"技能固定加成",
+      ataque:"基础攻击力", penetracion:"穿透", escaladohabilidad:"技能倍率",
+      bonoDano:"伤害加成", bonoDanoFisico:"物理伤害加成", bonoDanoMagico:"魔法伤害加成",
+      danoCritico:"暴击倍率", debuffDmg:"减益伤害", trueDmg:"真实伤害",
+    },
+    changelogBtn: "📋 更新日志",
+    changelogTitle: "更新日志",
+    changelog: [
+      { version:"v2.3", date:"2026年4月", label:"公式错误修复",
+        changes:[
+          "错误修复：重击ATK命中概率公式不正确 — 可能超过100%",
+          "新公式：概率 = 激活率 + (1−激活率) × max(0, 命中率−闪避率)，限制在[0%,100%]",
+          "重击始终命中（不可避免）— 激活时计为100%命中",
+          "普通攻击：有效命中 = max(0, 命中率−闪避率)",
+          "错误修复：平坦属性（ATK）的百分比增益直接加了小数而非相乘",
+          "修复：ATK的百分比增益现在正确计算：攻击力 × (1 + 数值%/100)",
+          "同样的修复应用于防御方的平坦属性",
+        ]
+      },
+      { version:"v2.2", date:"2026年4月", label:"中文语言与错误修复",
+        changes:[
+          "新增语言：🇨🇳 简体中文（ZH）— 所有文本完整翻译",
+          "标题和韧性弹窗的语言切换中新增🇨🇳 ZH按钮",
+          "错误修复：插入T.zh时initialAttacker定义被吸收进T对象",
+          "错误修复：中文排版双引号导致ZH更新日志语法错误",
+        ]
+      },
+      { version:"v2.1", date:"2026年4月", label:"重击效果",
+        changes:[
+          "重击ATK效果可应用于伤害 — ⚡重击标签中的开关",
+          "将最终伤害乘以×(1 + 受到伤害增加/100)作为独立的最终乘数",
+          "在结果面板中显示应用效果后的基础、减益和重击伤害",
+          "Olivia：在其面板中独立的'应用重击ATK效果'开关",
+          "Olivia使用⚡重击标签的属性 — 乘数实时更新",
+          "两个开关均包含在构建分享（📤 分享）中",
+        ]
+      },
+      { version:"v2.0", date:"2026年4月", label:"重大更新",
+        changes:[
+          "✦增益标签 — 手动增益/减益，按属性分组显示基础值和最终值",
+          "9个职业技能手风琴 — 神谕者、铁锤者、格斗士和枪手已实现",
+          "神谕者：神明印记（每层+2.5%伤害加成）和天使之盾（×0.50最终伤害）",
+          "铁锤者：背水一战护盾计算器，基础/基础+/进阶/进阶+等级",
+          "格斗士：真言护盾护盾计算器和PvP开关",
+          "枪手：和平无人机（+5%伤害加成）和充能炮台（+30%伤害加成/肾上腺素）",
+          "增益标签徽章显示激活的增益和技能总数",
+          "实时计算 — PC端移除计算按钮，手机端显示查看结果按钮",
+          "📤 分享按钮 — 生成包含完整配置的base64 URL",
+          "Olivia的友方增益 — 包含神明印记、无人机、炮台和天使之盾的独立部分",
+          "手机端标签栏分为两行各3个",
+        ]
+      },
+      { version:"v1.1", date:"2026年3月", label:"完整版本",
+        changes:[
+          "结果显示中新增无暴击基础伤害",
+          "根据情况更新暴击和减益的结果标签",
+          "重击条更新：重击+暴击+减益",
+          "打开Isabel面板时的信息弹窗",
+          "Isabel标题中的?按钮说明需要输入的生命值",
+          "净修正降低伤害时的视觉指示器",
+          "属性保存到本地存储 — 会话间持久保存",
+          "每个标签的↺重置按钮",
+        ]
+      },
+    ],
+    creditsTitle: "制作人员",
+    creditsLines: [
+      { label: "公式与机制", value: "xDarKz" },
+      { label: "界面/React开发", value: "Claude (Anthropic)" },
+      { label: "游戏", value: "云上城之歌" },
+      { label: "版本", value: "v2.3" },
+    ],
+    isabelLabels: {
+      isabel_skill_scaling_flat_bonus: "技能固定加成",
+      isabel_skill_scaling: "技能倍率",
+      partner_1_max_hp: "伙伴1最大生命值",
+      partner_2_max_hp: "伙伴2最大生命值",
+      partner_3_max_hp: "伙伴3最大生命值",
+      partner_4_max_hp: "伙伴4最大生命值",
+      pvp_healing_reducion: "PvP治疗减免（固定，仅PvP）",
+      partners_healing_reduction: "神器治疗减免（固定，仅PvP）",
+      healing_bonus: "治疗加成",
+    },
+    atkTabPopupTitle: "⚔ 标签 — 攻击方",
+    atkTabPopupBody: "这里填入<strong>你的进攻属性</strong>。输入角色数值：攻击力、穿透、技能倍率、伤害加成、暴击等。",
+    atkTabPopupBtn: "明白了",
+    defTabPopupTitle: "🛡 标签 — 防御方",
+    defTabPopupBody: "这里填入<strong>敌方的防御属性</strong>。输入对手数值：防御、穿透减免、伤害减免等。",
+    defTabPopupBtn: "明白了",
+    resetBtn: "↺ 重置",
+    shareBtn: "📤 分享",
+    shareCopied: "✓ 已复制",
+    negModWarning: "⚠ 净修正正在降低你的伤害",
+    calcBtn: "计算伤害",
+    mobileShowResults: "查看结果 ▼",
+    mobileShowInputs: "◀ 返回",
+    emptyHint: "配置参数\n以查看结果",
+    secBase: "基础计算链",
+    secMods: "净修正",
+    secChargedMods: "蓄力攻击修正",
+    secFinal: "最终伤害",
+    secChart: "可视化对比",
+    secChargedAtk: "重击ATK — 强力攻击计算()",
+    defPost: "穿透后防御", atkEff: "有效攻击力", danoBase: "基础伤害（×倍率）",
+    modGeneral: "伤害加成/减免 总计", modMagic: "魔法伤害加成/减免", modPhys: "物理伤害加成/减免",
+    modCrit: "净暴击", modDebuff: "净减益", debuffCancelled: "☠ 减益被抵消 — 敌方抵抗 ≥ 你的减益伤害", modPvP: "净PvP", modClass: "克制职业",
+    modChargedDmg: "伤害加成（蓄力）", modChargedRed: "伤害减免（蓄力）",
+    multTotal: "总乘数",
+    danoNoCrit: "基础伤害",
+    danoSinDebuff: "基础+暴击伤害（无减益，无重击）", danoConDebuff: "伤害+暴击+减益",
+    heavyOnly: "重击 ×1.30", heavyNormal: "重击 ×1.30 + 暴击", heavyDebuff: "重击 ×1.30 + 暴击 + 减益",
+    barNormal: "基础+暴击", barNoCritHeavy: "无暴击+重击", barCritHeavy: "暴击+重击",
+    barBaseDebuff: "基础+减益", barBaseDebuffHeavy: "基础+减益+重击",
+    barDebuff: "暴击+减益", barDebuffHeavy: "暴击+减益+重击", secChartDebuff: "减益伤害",
+    probAcierto: "总命中概率", dmgRecibido: "重击ATK留下的'受到伤害增加'效果（减益）",
+    heavyEffectToggle: "应用重击ATK效果",
+    heavyEffectActive: "⚡ 重击效果已激活",
+    secHeavyEffect: "重击ATK效果（受到伤害+%）",
+    heavyEffectNote: "最终乘数，在所有计算之后应用",
+    heavyInfoBtn: "❓ 重击ATK如何运作？",
+    heavyInfoTitle: "机制 — 重击ATK",
+    heavyInfoLines: [
+      "⚡ <strong>重击ATK总是将最终伤害提升30%。</strong>",
+      "🚫 这30%<strong>不适用</strong>于减益伤害加成 — 重击和减益是独立乘数。",
+      "🛡 <strong>重击无法避免</strong> — 攻击不能被闪避或格挡。",
+      "☠ 每对敌人施加<strong>20点重击ATK</strong>会触发<strong>每20点重击ATK +0.13%</strong>的受到伤害增加效果。",
+      "⏱ 此效果持续<strong>3秒</strong>，CD约为<strong>3-5秒</strong>，并<strong>计为减益</strong>用于减益伤害加成。",
+    ],
+    footer: "战斗模拟 — 估算数值",
+    caTitle: "蓄力攻击",
+    caInput: "蓄力攻击数值",
+    caActive: "已激活", caInactive: "未激活",
+    caBonusDmg: "伤害加成", caRedDmg: "伤害减免",
+    caTrueDmg: "额外真实伤害", caTrueDmgRed: "真实伤害减免",
+    caFormula: "× 100蓄力 = 1%伤害加成  •  × 100蓄力 = 0.5%伤害减免\n× 1蓄力 = 1.5真实伤害（每层）  •  × 1蓄力 = 1真实伤害减免（每层）",
+    caStacks: "蓄力层数",
+    caStacksNote: "层数只影响真实伤害和真实伤害减免",
+    caStackTotal: "真实伤害总计（层数）",
+    caStackRedTotal: "真实伤害减免总计（层数）",
+    popupTitle: "⚠ 警告 — 蓄力攻击",
+    popupBody: [
+      "蓄力攻击提供的<strong>伤害加成</strong>和<strong>伤害减免</strong><strong>仅在以下条件下激活</strong>：",
+      "① 你必须累积<strong>3层蓄力攻击</strong>。",
+      "② 以3层攻击有<strong>触发蓄力爆发的概率</strong>。",
+      "③ 触发后，伤害加成/减免效果<strong>仅持续3秒</strong>。",
+      "在此窗口之外，蓄力攻击<strong>仅</strong>提供每层真实伤害和真实伤害减免。",
+    ],
+    popupNote: "此计算器假设蓄力爆发在命中时处于激活状态。请相应调整蓄力攻击数值。",
+    popupConfirm: "明白，继续",
+    popupCancel: "取消",
+    labels: {
+      ataque:"基础攻击力", penetracion:"穿透", escaladohabilidad:"技能倍率",
+      bonoDano:"伤害加成", bonoDanoFisico:"物理伤害加成", bonoDanoMagico:"魔法伤害加成",
+      danoCritico:"暴击倍率", debuffDmg:"减益伤害", trueDmg:"真实伤害",
+      pvpDmgBonus:"PvP加成", allClassesDmgBonus:"全职业加成",
+      dmgToEnemyClass:"克制职业加成", charged_atk:"蓄力ATK",
+      defensa:"基础防御力", reduccionPenetracion:"穿透减免",
+      reduccionDano:"伤害减免（总）", reduccionDanoFisico:"物理伤害减免",
+      reduccionDanoMagico:"魔法伤害减免", reduccionDanoCritico:"暴击伤害减免",
+      reduccionDebuff:"减益抵抗", reduccionTrueDmg:"真实伤害减免",
+      pvpDmgReduccion:"PvP减免", reduccionAllClassesDmg:"全职业减免",
+      reduccionDmgFromClass:"特定职业减免",
+      ataque_fuerte:"重击ATK强度", ataque_fuerte_porcentaje:"激活概率 %",
+      hit_rate:"命中率（激活时）", evacion:"敌方闪避",
+    },
+  },
 };
 
 const initialAttacker = {
@@ -1027,8 +1375,9 @@ function calcDamage({ atk, def, flags, charged, chargedAtkVal, chargedAtkActive,
   const danofinal_debuff = isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base;
   const heavy_calc       = calcHeavy(danofinal_base, isDebuff ? danofinal_base * (1 + debuff_mod) : danofinal_base);
 
-  const prob_no      = 1 - charged.ataque_fuerte_porcentaje;
-  const prob_acierto = charged.ataque_fuerte_porcentaje * charged.hit_rate + prob_no * charged.evacion;
+  const prob_heavy   = Math.min(1, charged.ataque_fuerte_porcentaje);
+  const hit_efectivo = Math.min(1, Math.max(0, charged.hit_rate - charged.evacion));
+  const prob_acierto = Math.min(1, prob_heavy + (1 - prob_heavy) * hit_efectivo);
   const dmg_recibido = (charged.ataque_fuerte / 20) * 0.13;
 
   return {
@@ -1926,7 +2275,7 @@ function SkillsAccordion({ t, angelicShieldActive, setAngelicShieldActive, deity
 // ── Changelog Popup ───────────────────────────────────────────────────────
 function ChangelogPopup({ t, onClose }) {
   const versionColors = {
-    "v2.1":"#f0c060", "v2.0":"#e0b050",
+    "v2.3":"#f0c060", "v2.2":"#e0b050", "v2.1":"#c89838", "v2.0":"#b08030",
     "v0.9.1":"#86efac", "v0.9":"#fcd34d", "v0.8":"#fb923c", "v0.6":"#a78bfa", "v0.5":"#f87171",
     "v0.4":"#60a5fa", "v0.3":"#34d399", "v0.2":"#fb923c", "v0.1":"#94a3b8",
   };
@@ -1997,16 +2346,16 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
             <span style={{...P.title, color:"#fcd34d"}}>{t.tenacityPopupTitle}</span>
           </div>
           <div style={{display:"flex", flexDirection:"column", alignItems:"flex-end", gap:4}}>
-            <span style={{fontSize:10, color:"#6a5030", letterSpacing:"0.15em"}}>{lang==="es"?"IDIOMA":"LANGUAGE"}</span>
+            <span style={{fontSize:10, color:"#6a5030", letterSpacing:"0.15em"}}>{lang==="es"?"IDIOMA": lang==="zh"?"语言" :"LANGUAGE"}</span>
             <div style={{display:"flex", gap:5}}>
-              {["es","en"].map(l => (
+              {["es","en","zh"].map(l => (
                 <button key={l} onClick={() => setLang(l)} style={{
                   padding:"5px 11px", background: lang===l ? "rgba(202,138,4,0.22)" : "#0d0a06",
                   border: lang===l ? "1px solid #ca8a04" : "1px solid #3a2510",
                   color: lang===l ? "#fcd34d" : "#6a5030",
                   cursor:"pointer", borderRadius:2, fontFamily:"inherit", fontSize:12, fontWeight:700,
                 }}>
-                  {l==="es" ? "🇪🇸 ES" : "🇺🇸 EN"}
+                  {l==="es" ? "🇪🇸 ES" : l==="zh" ? "🇨🇳 ZH" : "🇺🇸 EN"}
                 </button>
               ))}
             </div>
@@ -2023,7 +2372,7 @@ function TenacityPopup({ t, lang, setLang, onClose }) {
         <div style={{...P.noteBox, background:"rgba(202,138,4,0.08)", border:"1px solid #4a3800"}}>
           <span style={P.noteIcon}>🔍</span>
           <span style={{...P.noteText, color:"#fbbf24"}}>
-            Guardians of Cloudia — Damage Calculator v2.1
+            Guardians of Cloudia — Damage Calculator v2.3
           </span>
         </div>
         <div style={{...P.btnRow, justifyContent:"center"}}>
@@ -2681,8 +3030,9 @@ function PartnersPanel({ t, flags, tg, isabelOpen, setIsabelOpen, oliviaOpen, se
 function HeavyAtkPanel({ t, ch, uc, heavyEffectActive, setHeavyEffectActive }) {
   const [infoOpen, setInfoOpen] = useState(false);
 
-  const prob_no      = 1 - ch.ataque_fuerte_porcentaje;
-  const prob_acierto = ch.ataque_fuerte_porcentaje * ch.hit_rate + prob_no * ch.evacion;
+  const prob_heavy   = Math.min(1, ch.ataque_fuerte_porcentaje);
+  const hit_efectivo = Math.min(1, Math.max(0, ch.hit_rate - ch.evacion));
+  const prob_acierto = Math.min(1, prob_heavy + (1 - prob_heavy) * hit_efectivo);
   const dmg_recibido = (ch.ataque_fuerte / 20) * 0.13;
 
   return (
@@ -2892,8 +3242,14 @@ export default function App() {
   const buffedAtk = useMemo(() => {
     let a = {...atk};
     buffs.filter(b=>b.target==="atk").forEach(b=>{
-      if(b.type==="flat") a[b.stat] = (a[b.stat]||0) + Number(b.value);
-      else a[b.stat] = (a[b.stat]||0) + Number(b.value)/100;
+      if(b.type==="flat") {
+        a[b.stat] = (a[b.stat]||0) + Number(b.value);
+      } else {
+        // PCT_FIELDS stores values as decimals (0.66 = 66%) → add value/100
+        // Flat stats like ataque store as absolute numbers → multiply by (1 + value/100)
+        if(PCT_FIELDS.has(b.stat)) a[b.stat] = (a[b.stat]||0) + Number(b.value)/100;
+        else a[b.stat] = (a[b.stat]||0) * (1 + Number(b.value)/100);
+      }
     });
     if (deityMarkStacks > 0) a.bonoDano = (a.bonoDano||0) + deityMarkStacks * 0.025;
     if (burnBoatActive) a.bonoDano = (a.bonoDano||0) + (BURN_BONUS_MAP[burnBoatLevel] || 0);
@@ -2905,8 +3261,12 @@ export default function App() {
   const buffedDef = useMemo(() => {
     let d = {...def};
     buffs.filter(b=>b.target==="def").forEach(b=>{
-      if(b.type==="flat") d[b.stat] = (d[b.stat]||0) + Number(b.value);
-      else d[b.stat] = (d[b.stat]||0) + Number(b.value)/100;
+      if(b.type==="flat") {
+        d[b.stat] = (d[b.stat]||0) + Number(b.value);
+      } else {
+        if(PCT_FIELDS.has(b.stat)) d[b.stat] = (d[b.stat]||0) + Number(b.value)/100;
+        else d[b.stat] = (d[b.stat]||0) * (1 + Number(b.value)/100);
+      }
     });
     return d;
   }, [def, buffs]);
@@ -3095,11 +3455,11 @@ export default function App() {
         <div style={{marginLeft:"auto", display:"flex", flexDirection:"column", alignItems:"flex-end", gap:6}}>
           {/* Top row: lang label + buttons */}
           <div style={{display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", justifyContent:"flex-end"}}>
-            <span style={S.langLabel}>{lang==="es" ? "Idioma" : "Language"}</span>
-            {["es","en"].map(l=>(
+            <span style={S.langLabel}>{lang==="es" ? "Idioma" : lang==="zh" ? "语言" : "Language"}</span>
+            {["es","en","zh"].map(l=>(
               <button key={l} onClick={()=>setLang(l)}
                 style={{ ...M('langBtn'), ...(lang===l?S.langOn:{}) }}>
-                {l==="es"?"🇪🇸 ES":"🇺🇸 EN"}
+                {l==="es"?"🇪🇸 ES": l==="zh"?"🇨🇳 ZH" :"🇺🇸 EN"}
               </button>
             ))}
           </div>
@@ -3300,6 +3660,29 @@ export default function App() {
           {tab!=="bf" && res && (
             <div ref={resultsRef} style={M("rBody")}>
               <SecTitle>{t.secBase}</SecTitle>
+              {(() => {
+                const atkBuffs = buffs.filter(b => b.target==="atk" && b.stat==="ataque");
+                const hasAtkBuff = atkBuffs.length > 0;
+                const baseAtk = atk.ataque;
+                const buffedAtkVal = buffedAtk.ataque;
+                const delta = buffedAtkVal - baseAtk;
+                return hasAtkBuff ? (
+                  <div style={{...S.rRow, flexDirection:"column", alignItems:"flex-start", gap:2}}>
+                    <div style={{display:"flex",justifyContent:"space-between",width:"100%"}}>
+                      <span style={{...S.rLbl}}>{t.labels.ataque}</span>
+                      <span style={{fontFamily:"monospace",fontSize:13,color:"#8a7045"}}>
+                        {Math.round(baseAtk).toLocaleString("es-ES")}
+                        <span style={{color: delta>=0?"#6ee7a0":"#fca5a5", marginLeft:6}}>
+                          {delta>=0?"▲ +":"▼ "}{Math.abs(Math.round(delta)).toLocaleString("es-ES")}
+                        </span>
+                        <span style={{color:"#f0c060", marginLeft:6, fontWeight:700}}>
+                          = {Math.round(buffedAtkVal).toLocaleString("es-ES")}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
               <RRow label={t.defPost}  value={res.defensafinal}/>
               <RRow label={t.atkEff}   value={res.ataquefinal}/>
               <RRow label={t.danoBase} value={res.danobase} color="#fcd34d" bold/>
@@ -3407,6 +3790,21 @@ export default function App() {
                       <span style={{fontWeight:700}}>{flags.isDebuff?t.heavyDebuff:flags.isCrit?t.heavyNormal:t.heavyOnly}</span>
                       <span style={{fontWeight:900,fontSize:20}}>{Math.round(heavy * mult).toLocaleString("es-ES")}</span>
                     </div>
+                    {angelicShieldActive && (
+                      <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid #5a1a1a"}}>
+                        <div style={{fontSize:10,color:"#f87171",letterSpacing:"0.12em",marginBottom:6}}>⚔ ANGELIC SHIELD ×0.50</div>
+                        {flags.isDebuff && (
+                          <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#f87171",fontFamily:"monospace",marginBottom:4}}>
+                            <span>{t.danoConDebuff}</span>
+                            <span style={{fontWeight:700}}>{Math.round(debuff * mult * 0.5).toLocaleString("es-ES")}</span>
+                          </div>
+                        )}
+                        <div style={{display:"flex",justifyContent:"space-between",fontSize:14,color:"#f87171",fontFamily:"monospace"}}>
+                          <span style={{fontWeight:700}}>{flags.isDebuff?t.heavyDebuff:flags.isCrit?t.heavyNormal:t.heavyOnly}</span>
+                          <span style={{fontWeight:900}}>{Math.round(heavy * mult * 0.5).toLocaleString("es-ES")}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
